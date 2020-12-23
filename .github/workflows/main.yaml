@@ -1,6 +1,8 @@
-name: CI
+name: Build and push image to DockerHub
 
-on: push
+on:
+  push:
+    branches: main
 
 jobs:
   build:
@@ -15,24 +17,15 @@ jobs:
             docker-layer-caching-${{ github.workflow }}-${{ matrix.restyler }}-{hash}
           restore-keys: |
             docker-layer-caching-${{ github.workflow }}-${{ matrix.restyler }}-
+
       - name: Build
-        run: |
-          docker build --tag restyled/sdk .
+        run: docker build --tag restyled/sdk:main .
 
-  push:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Login
         env:
           DOCKERHUB_USERNAME: ${{ secrets.dockerhub_username }}
           DOCKERHUB_PASSWORD: ${{ secrets.dockerhub_password }}
-        run: |
-          docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+        run: docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
 
-      - name: Tag & Push
-        run: |
-          docker tag restyled/sdk restyled/sdk:main
-          docker push restyled/sdk:main
+      - name: Push
+        run: docker push restyled/sdk:main
