@@ -13,8 +13,7 @@ import qualified Restylers.Info.Resolved as Info
 import Restylers.Name
 import Restylers.Options
 import Restylers.Version
-import RIO.Directory
-    (canonicalizePath, createDirectoryIfMissing, withCurrentDirectory)
+import RIO.Directory (createDirectoryIfMissing, withCurrentDirectory)
 import RIO.FilePath (takeDirectory, (<.>), (</>))
 import qualified RIO.Text as T
 import Test.Hspec
@@ -60,12 +59,11 @@ spec = do
 
             info <- runSimpleApp $ Info.load override
 
-            absoluteBase <- canonicalizePath base
             Info.name info `shouldBe` RestylerName "prettier-json"
             Info.imageSource info `shouldBe` BuildVersion
                 (RestylerName "prettier")
                 (RestylerVersion "v2.0.2-2")
-                (restylerBuild absoluteBase)
+                (restylerBuild base)
             Info.command info `shouldBe` ["prettier", "--write"]
             Info.include info `shouldBe` ["**/*.json"]
 

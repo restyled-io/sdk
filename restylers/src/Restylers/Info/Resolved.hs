@@ -20,9 +20,8 @@ import qualified Restylers.Info.Metadata as Metadata
 import Restylers.Name
 import qualified Restylers.Override as Override
 import Restylers.Version
-import RIO.FilePath (takeDirectory, (<.>), (</>))
+import RIO.FilePath ((<.>), (</>))
 import RIO.Text (unpack)
-import RIO.Directory (canonicalizePath)
 
 data RestylerInfo = RestylerInfo
     { enabled :: Bool
@@ -78,13 +77,11 @@ load yaml = do
             pure $ fromInfo info imageSource
 
         Right override -> do
-            overridesYaml <-
-                canonicalizePath
-                $ takeDirectory yaml
-                </> ".."
-                </> unpack (unRestylerName $ Override.overrides override)
-                </> "info"
-                <.> "yaml"
+            let
+                overridesYaml =
+                    unpack (unRestylerName $ Override.overrides override)
+                        </> "info"
+                        <.> "yaml"
             info <- decodeYaml overridesYaml
             imageSource <- getImageSource overridesYaml info
             pure $ fromInfo (info <> overrideToInfo override) imageSource
