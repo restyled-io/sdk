@@ -19,7 +19,7 @@ COPY restylers/package.yaml /src/restylers/package.yaml
 RUN stack install --dependencies-only
 COPY promote /src/promote/
 COPY restylers /src/restylers/
-RUN stack install
+RUN stack install --pedantic --test
 
 # Docker client
 ENV DOCKER_ARCHIVE docker-17.03.1-ce.tgz
