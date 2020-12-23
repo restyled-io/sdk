@@ -2,7 +2,8 @@ module Restylers.Build
     ( buildRestylerImage
     , pullRestylerImage
     , pushRestylerImage
-    ) where
+    )
+where
 
 import RIO hiding (to)
 
@@ -40,7 +41,7 @@ buildRestylerImage noCache info = do
                 $ mkRestylerImage registry name tag
             version <- dockerRunSh image cmd
             let versioned = mkRestylerImage registry name version
-            writeFileUtf8 (Info.restylerVersionCache name) $ version <> "\n"
+            writeFileUtf8 (Build.versionCache options) $ version <> "\n"
             logInfo $ "Tagging " <> display image <> " => " <> display versioned
             versioned <$ dockerTag image versioned
         BuildVersion name version options -> do
@@ -61,8 +62,8 @@ pullRestylerImage info = do
     registry <- oRegistry <$> view optionsL
     image <- case Info.imageSource info of
         Explicit image -> pure image
-        BuildVersionCmd name _ _ -> do
-            let cache = Info.restylerVersionCache name
+        BuildVersionCmd name _ options -> do
+            let cache = Build.versionCache options
             exists <- doesFileExist cache
             if exists
                 then do

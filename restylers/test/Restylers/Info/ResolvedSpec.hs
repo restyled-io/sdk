@@ -8,13 +8,14 @@ where
 import RIO
 
 import Restylers.Info.Build (restylerBuild)
-import Restylers.Info.Resolved (ImageSource(..), restylerInfoYaml)
+import Restylers.Info.Resolved (ImageSource(..))
 import qualified Restylers.Info.Resolved as Info
 import Restylers.Name
 import Restylers.Options
 import Restylers.Version
-import RIO.Directory (createDirectoryIfMissing, withCurrentDirectory)
-import RIO.FilePath (takeDirectory)
+import RIO.Directory
+    (canonicalizePath, createDirectoryIfMissing, withCurrentDirectory)
+import RIO.FilePath (takeDirectory, (<.>), (</>))
 import qualified RIO.Text as T
 import Test.Hspec
 
@@ -33,7 +34,7 @@ spec :: Spec
 spec = do
     describe "load" $ do
         it "can load an override with versioned image" $ inTempDirectory $ do
-            let base = restylerInfoYaml $ RestylerName "prettier"
+            let base = "prettier" </> "info" <.> "yaml"
             addFile base $ T.unlines
                 [ "enabled: true"
                 , "name: prettier"
@@ -47,7 +48,7 @@ spec = do
                 , "documentation:"
                 , "  - https://prettier.io/docs/en/"
                 ]
-            let override = restylerInfoYaml $ RestylerName "prettier-json"
+            let override = "prettier-json" </> "info" <.> "yaml"
             addFile override $ T.unlines
                 [ "overrides: prettier"
                 , "name: prettier-json"
@@ -59,11 +60,12 @@ spec = do
 
             info <- runSimpleApp $ Info.load override
 
+            absoluteBase <- canonicalizePath base
             Info.name info `shouldBe` RestylerName "prettier-json"
             Info.imageSource info `shouldBe` BuildVersion
                 (RestylerName "prettier")
                 (RestylerVersion "v2.0.2-2")
-                (restylerBuild base)
+                (restylerBuild absoluteBase)
             Info.command info `shouldBe` ["prettier", "--write"]
             Info.include info `shouldBe` ["**/*.json"]
 

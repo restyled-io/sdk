@@ -20,6 +20,7 @@ import RIO.Text (unpack)
 data RestylerBuild = RestylerBuild
     { path :: FilePath
     , dockerfile :: FilePath
+    , versionCache :: FilePath
     , options :: [String]
     }
     deriving stock (Eq, Show, Generic)
@@ -29,6 +30,7 @@ restylerBuild :: FilePath -> RestylerBuild
 restylerBuild yaml = RestylerBuild
     { path
     , dockerfile = path </> "Dockerfile"
+    , versionCache = path </> ".version"
     , options = []
     }
     where path = takeDirectory yaml

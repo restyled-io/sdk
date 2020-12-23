@@ -4,12 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cb21444c83639a65186e197c6e72bc397971903a3da63101fcbcc4d7675bc544
+-- hash: 8cbaa22ede99d9f978cb809e55b5d4d06abc3df37fa4542bb9eb02ae3070f330
 
 name:           restylers
 version:        0.0.0.0
 license:        MIT
-license-file:   LICENSE
 build-type:     Simple
 
 library

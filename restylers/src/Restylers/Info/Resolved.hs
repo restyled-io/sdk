@@ -4,8 +4,6 @@ module Restylers.Info.Resolved
     ( RestylerInfo(..)
     , ImageSource(..)
     , load
-    , restylerInfoYaml
-    , restylerVersionCache
     )
 where
 
@@ -22,8 +20,9 @@ import qualified Restylers.Info.Metadata as Metadata
 import Restylers.Name
 import qualified Restylers.Override as Override
 import Restylers.Version
-import RIO.FilePath ((<.>), (</>))
+import RIO.FilePath (takeDirectory, (<.>), (</>))
 import RIO.Text (unpack)
+import RIO.Directory (canonicalizePath)
 
 data RestylerInfo = RestylerInfo
     { enabled :: Bool
@@ -79,7 +78,13 @@ load yaml = do
             pure $ fromInfo info imageSource
 
         Right override -> do
-            let overridesYaml = restylerInfoYaml $ Override.overrides override
+            overridesYaml <-
+                canonicalizePath
+                $ takeDirectory yaml
+                </> ".."
+                </> unpack (unRestylerName $ Override.overrides override)
+                </> "info"
+                <.> "yaml"
             info <- decodeYaml overridesYaml
             imageSource <- getImageSource overridesYaml info
             pure $ fromInfo (info <> overrideToInfo override) imageSource
@@ -119,14 +124,6 @@ overrideToInfo Override.RestylerOverride { enabled, name, command, arguments, in
         , documentation
         , metadata
         }
-
-restylerInfoYaml :: RestylerName -> FilePath
-restylerInfoYaml name =
-    "restylers" </> unpack (unRestylerName name) </> "info" <.> "yaml"
-
-restylerVersionCache :: RestylerName -> FilePath
-restylerVersionCache name =
-    "restylers" </> unpack (unRestylerName name) </> ".version"
 
 decodeYaml :: (MonadIO m, FromJSON a) => FilePath -> m a
 decodeYaml = liftIO . Yaml.decodeFileThrow
