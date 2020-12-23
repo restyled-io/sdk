@@ -16,12 +16,11 @@ WORKDIR /src
 COPY stack.yaml /src/stack.yaml
 COPY promote/package.yaml /src/promote/package.yaml
 COPY restylers/package.yaml /src/restylers/package.yaml
-RUN stack install --dependencies-only
+RUN stack install --dependencies-only --test --no-run-tests
 COPY promote /src/promote/
 COPY restylers /src/restylers/
 RUN stack install --pedantic --test
 
-# Docker client
 ENV DOCKER_ARCHIVE docker-17.03.1-ce.tgz
 ENV DOCKER_SRC_URL https://get.docker.com/builds/Linux/x86_64/$DOCKER_ARCHIVE
 RUN \
