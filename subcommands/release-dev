@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+channel=${1:-dev}
+
+tmp=$(mktemp)
+trap 'rm -f -- "$tmp"' EXIT
+restyled restylers release --write "$tmp" ./*/info.yaml
+restyled promote --file "$tmp" "$channel"
