@@ -5,26 +5,32 @@ bin=$(cd "$(dirname "$0")" && pwd)
 cmd=$1
 shift
 
-if [ -z "$cmd" ]; then
-  echo "usage: restyled <subcommand> [option...]" >&2
-  exit 64
-fi
+usage() {
+  cat <<EOM
+Usage: $(basename "$0") <subcommand> [option...]
 
-if [ ! -x "$bin/restyled-$cmd" ]; then
-  cat >&2 <<EOM
-Invalid subcommand: $cmd
+Subcommands:
+$(for subcommand in "$bin"/restyled-*; do
+    if [ -x "$subcommand" ]; then
+      basename "$subcommand" | sed 's/^restyled-/  /' | sort
+    fi
+  done)
 
-  In order to execute \`restyled $cmd', an executable named
-
-    restyled-$cmd
-
-  must be present in
-
-    $bin
-
-  The file is either not present or not executable.
+Try \`restyled <subcommand> --help' for subcommand-specific help.
 
 EOM
+}
+
+case "$cmd" in
+  -h | --help | help)
+    usage
+    exit 0
+    ;;
+esac
+
+if [ ! -x "$bin/restyled-$cmd" ]; then
+  echo "Invalid subcommand: $cmd" >&2
+  usage >&2
   exit 64
 fi
 

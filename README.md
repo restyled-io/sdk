@@ -27,7 +27,6 @@ restyled <subcommand> [option...]
 
 ## TODO
 
-- Top-level `-h|--help|help`
 - Tab completion script
 
 ---
