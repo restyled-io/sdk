@@ -20,7 +20,7 @@ jobs:
           docker build --tag restyled/sdk .
 
   push:
-    if: github.ref == "refs/heads/main"
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
 
