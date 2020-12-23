@@ -3,7 +3,7 @@ set -eu
 
 app_env=$1
 installation_id=$2
-jwt=$(./tools/get-jwt-token "$app_env")
+jwt=$(restyled get-jwt-token "$app_env")
 
 # https://developer.github.com/apps/building-github-apps/authentication-options-for-github-apps/#authenticating-as-an-installation
 curl --fail --silent --show-error -X POST \

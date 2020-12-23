@@ -35,21 +35,24 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN \
   apt-get update && \
   apt-get install -y --no-install-recommends \
-    ca-certificates=20190110~18.04.1 \
-    locales=2.27-3ubuntu1.2 \
-    netbase=5.4 && \
+    awscli \
+    ca-certificates \
+    locales \
+    netbase && \
   locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/local/bin/docker /bin/docker
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
-COPY subcommands/ /src/bin
-RUN \
-  for subcommand in /src/bin/*; do \
-    cp "$subcommand" /bin/restyled-"$(basename "$subcommand")"; \
-  done
-COPY restyled /bin/restyled
+COPY files/ /
+
+ENV AWS_PROFILE=restyled-ci
+ENV GIT_AUTHOR_NAME=Restyled.io
+ENV GIT_AUTHOR_EMAIL=commits@restyled.io
+ENV GIT_COMMITTER_NAME=Restyled.io
+ENV GIT_COMMITTER_EMAIL=commits@restyled.io
+
 RUN mkdir -p /code
 WORKDIR /code
 ENTRYPOINT ["restyled"]

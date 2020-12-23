@@ -13,9 +13,17 @@ if [ -t 1 ]; then
   options+=(--tty)
 fi
 
-docker_config=$HOME/.docker/config.json
-if [ -f "$docker_config" ]; then
-  options+=(--volume "$docker_config":/root/.docker/config.json:ro)
-fi
+configs=(
+  .aws/config
+  .aws/credentials
+  .docker/config.json
+)
 
-exec docker run "${options[@]}" "restyled/sdk" "$@"
+for config in "${configs[@]}"; do
+  if [ -f "$HOME/$config" ]; then
+    options+=(--volume "$HOME/$config:/root/$config:ro")
+  fi
+done
+
+: "${RESTYLED_SDK_TAG:=''}"
+exec docker run "${options[@]}" "restyled/sdk$RESTYLED_SDK_TAG" "$@"
