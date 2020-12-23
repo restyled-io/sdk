@@ -32,7 +32,7 @@ case "$env" in
 esac
 
 api_token=$(
-  aws --profile restyled ssm get-parameter \
+  aws ssm get-parameter \
     --name "/restyled/$env/restyled-api-token" \
     --output text --query 'Parameter.Value'
 )
