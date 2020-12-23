@@ -43,9 +43,9 @@ if [ -z "$path" ]; then
 fi
 
 if [ -n "$installation_id" ]; then
-  auth="Token $(./tools/get-access-token "$app_env" "$installation_id")"
+  auth="Token $(restyled get-access-token "$app_env" "$installation_id")"
 else
-  auth="Bearer $(./tools/get-jwt-token "$app_env")"
+  auth="Bearer $(restyled get-jwt-token "$app_env")"
 fi
 
 curl --fail --silent --show-error \

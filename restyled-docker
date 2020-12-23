@@ -25,5 +25,5 @@ for config in "${configs[@]}"; do
   fi
 done
 
-: "${RESTYLED_SDK_TAG:=''}"
+: "${RESTYLED_SDK_TAG:=:main}"
 exec docker run "${options[@]}" "restyled/sdk$RESTYLED_SDK_TAG" "$@"

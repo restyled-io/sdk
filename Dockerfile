@@ -13,7 +13,6 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /src/bin
 WORKDIR /src
-
 COPY stack.yaml /src/stack.yaml
 COPY promote/package.yaml /src/promote/package.yaml
 COPY restylers/package.yaml /src/restylers/package.yaml
@@ -37,10 +36,15 @@ RUN \
   apt-get install -y --no-install-recommends \
     awscli \
     ca-certificates \
+    curl \
+    git \
+    jq \
     locales \
-    netbase && \
+    netbase \
+    ruby-full && \
   locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
+RUN gem install jwt
 
 COPY --from=builder /usr/local/bin/docker /bin/docker
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
