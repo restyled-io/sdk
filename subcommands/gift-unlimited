@@ -1,0 +1,62 @@
+#!/bin/sh
+#
+# Update a Marketplace Account (by GitHub Login) to our Free Unlimited plan.
+#
+###
+set -eu
+
+curl_() {
+  path=$1
+  shift
+
+  curl \
+    --fail \
+    --silent \
+    --show-error \
+    --header "Authorization: token $api_token" \
+    --header "Accept: application/json" \
+    --header "Content-type: application/json" \
+    "$api_host/admin/marketplace$path" "$@"
+}
+
+curl_first_id() {
+  curl_ "$@" | jq --raw-output '.[] | .id' | head -n 1
+}
+
+env="${RESTYLED_ENV:-dev}"
+
+case "$env" in
+  dev) api_host=https://restyled.ngrok.io ;;
+  prod) api_host=https://restyled.io ;;
+  *) api_host=https://$env.restyled.io ;;
+esac
+
+api_token=$(
+  aws --profile restyled ssm get-parameter \
+    --name "/restyled/$env/restyled-api-token" \
+    --output text --query 'Parameter.Value'
+)
+
+login=$1
+account=$(curl_first_id "/accounts?githubLogin=$login")
+
+if [ -z "$account" ]; then
+  printf 'No account with githubLogin=%s\n' "$login" >&2
+  exit 1
+fi
+
+plan=$(curl_first_id "/plans?githubId=0")
+
+if [ -z "$plan" ]; then
+  echo "Unable to find Discount Plan (githubId=0)" >&2
+  exit 1
+fi
+
+printf 'Updating Account Id %s, for GitHub Login %s, to Discount Plan Id %s\n' \
+  "$account" \
+  "$login" \
+  "$plan"
+
+{ curl_ "/accounts/$account" -X PATCH -d @- | jq .; } <<EOM
+{ "marketplacePlan": $plan }
+EOM

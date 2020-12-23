@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+app_env=$1
+app_id=$(
+  aws --profile restyled ssm get-parameter \
+    --name "/restyled/$app_env/github-app-id" \
+    --output text --query 'Parameter.Value'
+)
+app_key=$(
+  aws --profile restyled ssm get-parameter \
+    --name "/restyled/$app_env/github-app-key" \
+    --output text --query 'Parameter.Value'
+)
+
+# https://developer.github.com/apps/building-github-apps/authentication-options-for-github-apps/#authenticating-as-a-github-app
+ruby -r jwt -r openssl <<EOM
+  private_pem = "$app_key"
+  private_key = OpenSSL::PKey::RSA.new(private_pem)
+  payload = {
+    iat: Time.now.to_i,
+    exp: Time.now.to_i + (5 * 60),
+    iss: $app_id,
+  }
+  puts JWT.encode(payload, private_key, "RS256")
+EOM

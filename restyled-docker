@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -eu
+
+options=(
+  --rm --interactive
+  --env "REALPWD=$PWD"
+  --volume "$PWD":/code
+  --volume /tmp:/tmp
+  --volume /var/run/docker.sock:/var/run/docker.sock
+)
+
+if [ -t 1 ]; then
+  options+=(--tty)
+fi
+
+docker_config=$HOME/.docker/config.json
+if [ -f "$docker_config" ]; then
+  options+=(--volume "$docker_config":/root/.docker/config.json:ro)
+fi
+
+exec docker run "${options[@]}" "restyled/sdk" "$@"

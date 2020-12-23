@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+
+bin=$(cd "$(dirname "$0")" && pwd)
+cmd=$1
+shift
+
+if [ -z "$cmd" ]; then
+  echo "usage: restyled <subcommand> [option...]" >&2
+  exit 64
+fi
+
+if [ ! -x "$bin/restyled-$cmd" ]; then
+  cat >&2 <<EOM
+Invalid subcommand: $cmd
+
+  In order to execute \`restyled $cmd', an executable named
+
+    restyled-$cmd
+
+  must be present in
+
+    $bin
+
+  The file is either not present or not executable.
+
+EOM
+  exit 64
+fi
+
+exec "$bin/restyled-$cmd" "$@"

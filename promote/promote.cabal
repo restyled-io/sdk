@@ -1,0 +1,48 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: c6b1a6309109d2698ac5956d9825428832c9596d47130bbbe9f89c698eb144c4
+
+name:           promote
+version:        0.0.0.0
+license:        MIT
+build-type:     Simple
+
+library
+  exposed-modules:
+      Restyled.Promote.Channel
+      Restyled.Promote.IntegrationTest
+      Restyled.Promote.Manifest
+      Restyled.Promote.Options
+      Restyled.Promote.Ruby
+  other-modules:
+      Paths_promote
+  hs-source-dirs:
+      src
+  default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists
+  build-depends:
+      base
+    , conduit
+    , http-conduit
+    , optparse-applicative
+    , rio
+    , shakespeare
+  default-language: Haskell2010
+
+executable promote
+  main-is: Main.hs
+  other-modules:
+      Paths_promote
+  hs-source-dirs:
+      app
+  default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base
+    , promote
+    , rio
+  default-language: Haskell2010

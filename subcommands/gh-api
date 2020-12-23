@@ -1,0 +1,55 @@
+#!/bin/sh
+set -eu
+
+usage() {
+  cat <<'EOM'
+Usage: gh-api [-e dev|prod] [-i INSTALLATION_ID] <path> [curl-options...]
+Options:
+
+  -e ENV                Restyled environment to interact with, default dev.
+  -i INSTALLATION_ID    If given, a JWT token will be used to get an Access
+                        Token for this Installation, which is then used for the
+                        request you're trying to make.
+
+EOM
+}
+
+app_env=dev
+installation_id=
+path=
+
+while getopts he:i: arg; do
+  case "$arg" in
+    h)
+      usage
+      exit
+      ;;
+    e) app_env=$OPTARG ;;
+    i) installation_id=$OPTARG ;;
+    [?])
+      usage >&2
+      exit 64
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+path=$1
+
+if [ -z "$path" ]; then
+  echo "path is required" >&2
+  usage >&2
+  exit 1
+fi
+
+if [ -n "$installation_id" ]; then
+  auth="Token $(./tools/get-access-token "$app_env" "$installation_id")"
+else
+  auth="Bearer $(./tools/get-jwt-token "$app_env")"
+fi
+
+curl --fail --silent --show-error \
+  --header "Authorization: $auth" \
+  --header "Accept: application/vnd.github.machine-man-preview+json" \
+  --header "User-Agent: Restyled.io" \
+  "https://api.github.com$path"
