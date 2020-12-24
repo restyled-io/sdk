@@ -35,7 +35,7 @@ main = do
 
                 Release manifest yamls -> do
                     restylers <- for yamls $ \yaml -> do
-                        logInfo $ "Verifing " <> fromString yaml
+                        logInfo $ "Verifying " <> fromString yaml
                         info <- Info.load yaml
                         image <- ensureImage info =<< getRestylerImage info
                         pure $ toRestyler info image
