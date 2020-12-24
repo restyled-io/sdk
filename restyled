@@ -13,10 +13,16 @@ if [ -t 1 ]; then
   options+=(--tty)
 fi
 
+if [ -n "${AWS_PROFILE:-""}" ]; then
+  options+=(--env AWS_PROFILE)
+fi
+
 configs=(
   .aws/config
   .aws/credentials
   .docker/config.json
+  .netrc
+  .netrc.gpg
 )
 
 for config in "${configs[@]}"; do
@@ -25,5 +31,11 @@ for config in "${configs[@]}"; do
   fi
 done
 
+: "${GNUPGHOME:=$HOME/.gnupg}"
 : "${RESTYLED_SDK_TAG:=:main}"
+
+if [ -d "$GNUPGHOME" ]; then
+  options+=(--volume "$GNUPGHOME:/root/.gnupg")
+fi
+
 exec docker run "${options[@]}" "restyled/sdk$RESTYLED_SDK_TAG" "$@"
