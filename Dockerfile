@@ -21,11 +21,7 @@ COPY promote /src/promote/
 COPY restylers /src/restylers/
 RUN stack install --pedantic --test
 
-ENV DOCKER_ARCHIVE docker-17.03.1-ce.tgz
-ENV DOCKER_SRC_URL https://get.docker.com/builds/Linux/x86_64/$DOCKER_ARCHIVE
-RUN \
-  curl -fsSLO "$DOCKER_SRC_URL" && \
-  tar --strip-components=1 -xvzf "$DOCKER_ARCHIVE" -C /usr/local/bin
+RUN curl -sL https://get.docker.com/ | sh
 
 FROM ubuntu:18.04
 LABEL maintainer="Pat Brisbin <pbrisbin@gmail.com>"
@@ -47,7 +43,7 @@ RUN \
 RUN gem install jwt
 RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 
-COPY --from=builder /usr/local/bin/docker /bin/docker
+COPY --from=builder /usr/bin/docker /bin/docker
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
 COPY files/ /
