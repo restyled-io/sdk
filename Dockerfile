@@ -37,6 +37,7 @@ RUN \
     ca-certificates \
     curl \
     git \
+    gnupg \
     jq \
     locales \
     netbase \
@@ -44,13 +45,13 @@ RUN \
   locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
 RUN gem install jwt
+RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 
 COPY --from=builder /usr/local/bin/docker /bin/docker
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
 COPY files/ /
 
-ENV AWS_PROFILE=restyled-ci
 ENV GIT_AUTHOR_NAME=Restyled.io
 ENV GIT_AUTHOR_EMAIL=commits@restyled.io
 ENV GIT_COMMITTER_NAME=Restyled.io
