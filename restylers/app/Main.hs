@@ -7,10 +7,13 @@ import RIO
 
 import Restylers.App
 import Restylers.Build
+import Restylers.Info.Resolved (RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
 import Restylers.Lint
+import Restylers.Image (RestylerImage)
 import Restylers.Manifest (toRestyler)
 import qualified Restylers.Manifest as Manifest
+import RIO.Process
 import Restylers.Options
 import Restylers.Test
 
@@ -32,14 +35,9 @@ main = do
 
                 Release manifest yamls -> do
                     restylers <- for yamls $ \yaml -> do
+                        logInfo $ "Verifing " <> fromString yaml
                         info <- Info.load yaml
-                        image <- pullRestylerImage info `catchAny` \ex -> do
-                            logWarn $ display ex
-                            logInfo "Attempting build and re-pull..."
-                            image <- buildRestylerImage (NoCache False) info
-                            testRestylerImage info image
-                            pushRestylerImage image
-                            pullRestylerImage info
+                        image <- ensureImage info =<< getRestylerImage info
                         pure $ toRestyler info image
                     logInfo
                         $ "Writing "
@@ -47,3 +45,39 @@ main = do
                         <> " Restyler(s) to "
                         <> fromString manifest
                     liftIO $ Manifest.write manifest restylers
+
+ensureImage
+    :: ( MonadUnliftIO m
+       , MonadReader env m
+       , HasLogFunc env
+       , HasProcessContext env
+       , HasOptions env
+       )
+    => RestylerInfo
+    -> Maybe RestylerImage
+    -> m RestylerImage
+ensureImage info = \case
+    Nothing -> do
+        logInfo "Image not found, building now"
+        buildTestPush info
+    Just image -> do
+        exists <- doesRestylerImageExist image
+        if exists
+            then pure image
+            else do
+                logInfo "Image not found, building now"
+                buildTestPush info
+
+buildTestPush
+    :: ( MonadUnliftIO m
+       , MonadReader env m
+       , HasLogFunc env
+       , HasProcessContext env
+       , HasOptions env
+       )
+    => RestylerInfo
+    -> m RestylerImage
+buildTestPush info = do
+    image <- buildRestylerImage (NoCache False) info
+    testRestylerImage info image
+    image <$ pushRestylerImage image

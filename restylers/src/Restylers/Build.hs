@@ -1,6 +1,7 @@
 module Restylers.Build
     ( buildRestylerImage
-    , pullRestylerImage
+    , getRestylerImage
+    , doesRestylerImageExist
     , pushRestylerImage
     )
 where
@@ -15,6 +16,7 @@ import Restylers.Options
 import Restylers.Version
 import qualified RIO.ByteString.Lazy as BSL
 import RIO.Directory (doesFileExist)
+import qualified RIO.Map as Map
 import RIO.Process
 import RIO.Text (unpack)
 import qualified RIO.Text as T
@@ -49,38 +51,41 @@ buildRestylerImage noCache info = do
                 $ mkRestylerImage registry name
                 $ unRestylerVersion version
 
-pullRestylerImage
-    :: ( MonadIO m
-       , MonadReader env m
-       , HasLogFunc env
-       , HasProcessContext env
-       , HasOptions env
-       )
+getRestylerImage
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasOptions env)
     => RestylerInfo
-    -> m RestylerImage
-pullRestylerImage info = do
+    -> m (Maybe RestylerImage)
+getRestylerImage info = do
     registry <- oRegistry <$> view optionsL
-    image <- case Info.imageSource info of
-        Explicit image -> pure image
+    case Info.imageSource info of
+        Explicit image -> pure $ Just image
         BuildVersionCmd name _ options -> do
             let cache = Build.versionCache options
             exists <- doesFileExist cache
             if exists
                 then do
                     version <- T.strip <$> readFileUtf8 cache
-                    pure $ mkRestylerImage registry name version
-                else do
-                    logWarn
-                        $ "Restyler "
-                        <> display info
-                        <> " uses version_cmd, but "
-                        <> fromString cache
-                        <> " does not exist."
-                        <> " Building now..."
-                    buildRestylerImage (NoCache False) info
+                    pure $ Just $ mkRestylerImage registry name version
+                else Nothing <$ logWarn
+                    ("Unable to find image name for "
+                    <> display name
+                    <> ": uses version_cmd and no .version file committed"
+                    )
         BuildVersion name version _ -> do
-            pure $ mkRestylerImage registry name $ unRestylerVersion version
-    image <$ proc "docker" ["pull", unImage image] runProcess_
+            pure $ Just $ mkRestylerImage registry name $ unRestylerVersion
+                version
+
+doesRestylerImageExist
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    => RestylerImage
+    -> m Bool
+doesRestylerImageExist image =
+    withModifyEnvVars (Map.insert "DOCKER_CLI_EXPERIMENTAL" "enabled") $ do
+        (ec, _stdout, _stderr) <- proc
+            "docker"
+            ["manifest", "inspect", unImage image]
+            readProcess
+        pure $ ec == ExitSuccess
 
 pushRestylerImage
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
