@@ -15,65 +15,49 @@ import qualified Restylers.Info.Resolved as Info
 import Restylers.Options
 import Restylers.Version
 import qualified RIO.ByteString.Lazy as BSL
-import RIO.Directory (doesFileExist)
 import qualified RIO.Map as Map
 import RIO.Process
 import RIO.Text (unpack)
 import qualified RIO.Text as T
 
 buildRestylerImage
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    => RestylerInfo
+    -> RestylerImage
+    -> m ()
+buildRestylerImage info image = case Info.imageSource info of
+    Explicit x -> logInfo $ "Not bulding explicit image, " <> display x
+    BuildVersionCmd _name _cmd options -> do
+        logInfo $ "Building " <> display image
+        void $ Build.build options image
+    BuildVersion _name _version options -> do
+        logInfo $ "Building " <> display image
+        void $ Build.build options image
+
+getRestylerImage
     :: ( MonadIO m
        , MonadReader env m
        , HasLogFunc env
        , HasProcessContext env
        , HasOptions env
        )
-    => NoCache
-    -> RestylerInfo
-    -> m RestylerImage
-buildRestylerImage noCache info = do
-    registry <- oRegistry <$> view optionsL
-    case Info.imageSource info of
-        Explicit image -> do
-            logInfo $ "Pulling explicit image, " <> display image
-            image <$ proc "docker" ["pull", unImage image] runProcess
-        BuildVersionCmd name cmd options -> do
-            tag <- oTag <$> view optionsL
-            image <- Build.build noCache options
-                $ mkRestylerImage registry name tag
-            version <- dockerRunSh image cmd
-            let versioned = mkRestylerImage registry name version
-            writeFileUtf8 (Build.versionCache options) $ version <> "\n"
-            logInfo $ "Tagging " <> display image <> " => " <> display versioned
-            versioned <$ dockerTag image versioned
-        BuildVersion name version options -> do
-            Build.build noCache options
-                $ mkRestylerImage registry name
-                $ unRestylerVersion version
-
-getRestylerImage
-    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasOptions env)
     => RestylerInfo
-    -> m (Maybe RestylerImage)
+    -> m RestylerImage
 getRestylerImage info = do
     registry <- oRegistry <$> view optionsL
+
     case Info.imageSource info of
-        Explicit image -> pure $ Just image
-        BuildVersionCmd name _ options -> do
-            let cache = Build.versionCache options
-            exists <- doesFileExist cache
-            if exists
-                then do
-                    version <- T.strip <$> readFileUtf8 cache
-                    pure $ Just $ mkRestylerImage registry name version
-                else Nothing <$ logWarn
-                    ("Unable to find image name for "
-                    <> display name
-                    <> ": uses version_cmd and no .version file committed"
-                    )
-        BuildVersion name version _ -> do
-            pure $ Just $ mkRestylerImage registry name $ unRestylerVersion
-                version
+        Explicit image -> pure image
+        BuildVersionCmd name cmd options -> do
+            logInfo $ "Building " <> display name <> " for version_cmd"
+            tag <- oTag <$> view optionsL
+            image <- Build.build options $ mkRestylerImage registry name tag
+            version <- dockerRunSh image cmd
+            let versioned = mkRestylerImage registry name version
+            versioned <$ dockerTag image versioned
+        BuildVersion name explicitVersion _ -> do
+            let version = unRestylerVersion explicitVersion
+            pure $ mkRestylerImage registry name version
 
 doesRestylerImageExist
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
@@ -91,7 +75,9 @@ pushRestylerImage
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
     => RestylerImage
     -> m ()
-pushRestylerImage image = proc "docker" ["push", unImage image] runProcess_
+pushRestylerImage image = do
+    logInfo $ "Pushing " <> display image
+    proc "docker" ["push", unImage image] runProcess_
 
 dockerRunSh
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)

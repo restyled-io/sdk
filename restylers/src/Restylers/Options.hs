@@ -1,13 +1,5 @@
 module Restylers.Options
     ( Command(..)
-    , NoCache(..)
-    , addNoCache
-    , LintDockerfile(..)
-    , whenLintDockerfile
-    , RunTests(..)
-    , whenRunTests
-    , Push(..)
-    , whenPush
     , Options(..)
     , HasOptions(..)
     , parseOptions
@@ -20,32 +12,8 @@ import Options.Applicative
 import Restylers.Registry
 import RIO.NonEmpty (some1)
 
-newtype NoCache = NoCache Bool
-    deriving newtype Show
-
-addNoCache :: NoCache -> [String] -> [String]
-addNoCache (NoCache b) = if b then ("--no-cache" :) else id
-
-newtype LintDockerfile = LintDockerfile Bool
-    deriving newtype Show
-
-whenLintDockerfile :: Applicative m => LintDockerfile -> m () -> m ()
-whenLintDockerfile (LintDockerfile b) = when b
-
-newtype RunTests = RunTests Bool
-    deriving newtype Show
-
-whenRunTests :: Applicative m => RunTests -> m () -> m ()
-whenRunTests (RunTests b) = when b
-
-newtype Push = Push Bool
-    deriving newtype Show
-
-whenPush :: Applicative m => Push -> m () -> m ()
-whenPush (Push b) = when b
-
 data Command
-    = Build NoCache LintDockerfile RunTests Push FilePath
+    = Build FilePath
     | Release FilePath (NonEmpty FilePath)
     deriving stock Show
 
@@ -87,25 +55,7 @@ options = Options
         )
     <*> subparser
         (  command "build" (parse
-            (Build
-                <$> (NoCache <$> switch
-                    (  long "no-cache"
-                    <> help "Pass --no-cache to docker-build"
-                    ))
-                <*> (LintDockerfile <$> switch
-                    (  long "lint"
-                    <> help "Lint the build Dockerfile"
-                    ))
-                <*> (RunTests <$> switch
-                    (  long "test"
-                    <> help "Test the build image"
-                    ))
-                <*> (Push <$> switch
-                    (  long "push"
-                    <> help "Push the build image"
-                    ))
-                <*> yamlArgument
-                )
+            (Build <$> yamlArgument)
             "Build an image for Restylers described in info.yaml files")
         <> command "release" (parse
             (Release

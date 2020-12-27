@@ -26,58 +26,33 @@ main = do
         runRIO app $ do
             logDebug $ "Options: " <> displayShow opts
             case oCommand of
-                Build noCache lint test push yaml -> do
-                    info <- Info.load yaml
-                    whenLintDockerfile lint $ lintRestyler info
-                    image <- buildRestylerImage noCache info
-                    whenRunTests test $ testRestylerImage info image
-                    whenPush push $ pushRestylerImage image
-
+                Build yaml -> do
+                    logDebug $ fromString yaml
+                    void $ build False =<< Info.load yaml
                 Release manifest yamls -> do
                     restylers <- for yamls $ \yaml -> do
-                        logInfo $ "Verifying " <> fromString yaml
+                        logDebug $ fromString yaml
                         info <- Info.load yaml
-                        image <- ensureImage info =<< getRestylerImage info
+                        image <- build True info
                         pure $ toRestyler info image
-                    logInfo
-                        $ "Writing "
-                        <> displayShow (length restylers)
-                        <> " Restyler(s) to "
-                        <> fromString manifest
                     liftIO $ Manifest.write manifest restylers
 
-ensureImage
+build
     :: ( MonadUnliftIO m
        , MonadReader env m
        , HasLogFunc env
        , HasProcessContext env
        , HasOptions env
        )
-    => RestylerInfo
-    -> Maybe RestylerImage
+    => Bool -- ^ Push after build?
+    -> RestylerInfo
     -> m RestylerImage
-ensureImage info = \case
-    Nothing -> do
-        logInfo "Image not found, building now"
-        buildTestPush info
-    Just image -> do
-        exists <- doesRestylerImageExist image
-        if exists
-            then pure image
-            else do
-                logInfo "Image not found, building now"
-                buildTestPush info
+build push info = do
+    image <- getRestylerImage info
+    unlessM (doesRestylerImageExist image) $ do
+        lintRestyler info
+        buildRestylerImage info image
+        testRestylerImage info image
+        when push $ pushRestylerImage image
 
-buildTestPush
-    :: ( MonadUnliftIO m
-       , MonadReader env m
-       , HasLogFunc env
-       , HasProcessContext env
-       , HasOptions env
-       )
-    => RestylerInfo
-    -> m RestylerImage
-buildTestPush info = do
-    image <- buildRestylerImage (NoCache False) info
-    testRestylerImage info image
-    image <$ pushRestylerImage image
+    pure image

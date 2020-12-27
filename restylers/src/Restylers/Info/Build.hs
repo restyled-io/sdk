@@ -12,7 +12,6 @@ import RIO
 
 import Data.Aeson
 import Restylers.Image
-import Restylers.Options (NoCache, addNoCache)
 import RIO.FilePath (takeDirectory, (</>))
 import RIO.Process
 import RIO.Text (unpack)
@@ -37,23 +36,17 @@ restylerBuild yaml = RestylerBuild
 
 build
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
-    => NoCache
-    -> RestylerBuild
+    => RestylerBuild
     -> RestylerImage
     -> m RestylerImage
-build noCache RestylerBuild {..} image = do
-    logInfo $ "Building " <> display image
-
-    let
-        args = concat
-            [ ["build"]
-            , ["--tag", unImage image]
-            , ["--file", dockerfile]
-            , addNoCache noCache options
-            , [path]
-            ]
-
-    image <$ proc "docker" args runProcess_
+build RestylerBuild {..} image = image <$ proc "docker" args runProcess_
+  where
+    args = concat
+        [ ["build", "--quiet"]
+        , ["--tag", unImage image]
+        , ["--file", dockerfile]
+        , [path]
+        ]
 
 unImage :: RestylerImage -> String
 unImage = unpack . unRestylerImage
