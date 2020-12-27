@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 module Restyled.Promote.IntegrationTest
     ( IntegrationTests(..)
     , integrationTest
@@ -12,13 +10,14 @@ where
 import RIO
 
 import Restyled.Promote.Channel
+import Control.Monad.Extra (orM, andM)
 import Restyled.Promote.Manifest
-import Restyled.Promote.Ruby
 import qualified RIO.ByteString.Lazy as BSL
 import RIO.Process
-import RIO.Text (unpack)
+import RIO.Directory (withCurrentDirectory)
+import RIO.Text (unpack, pack)
+import Restyled.Promote.IntegrationTest.Setup
 import qualified RIO.Text as T
-import Text.Shakespeare.Text (st)
 
 data IntegrationTests
     = IntegrationTestDemo45
@@ -66,14 +65,33 @@ runIntegrationTest channel IntegrationTestOptions {..} = do
     logInfo $ "Pull Request: " <> display pr
 
     token <- getAccessToken oitApp oitInstallationId
-    withManifest channel $ \tmp ->
-        ruby ["fileutils", "tmpdir", "yaml"]
-            $ setupIntegrationRb tmp channel token oitRepo oitBranch
+    let
+        cloneUrl =
+            "https://x-access-token:"
+                <> token
+                <> "@github.com/"
+                <> oitRepo
+                <> ".git"
+
+    withManifest channel $ \manifest -> do
+        withTemporaryClone cloneUrl $ do
+            void $ orM
+                [ git "checkout" ["--quiet", oitBranch]
+                , True <$ git_ "checkout" ["--quiet", "-b", oitBranch]
+                ]
+
+            setupManifestTestFiles channel manifest
+
+            void $ andM
+                [ git "add" ["."]
+                , git "commit" ["-m", "Update test case files"]
+                , True <$ git_ "push" []
+                ]
 
     proc
         "docker"
         (concat
-            [ ["run", "--interactive", "--tty", "--rm"]
+            [ ["run", "--interactive", "--rm"]
             , if oitDebug then ["--env", "DEBUG=1"] else []
             , ["--env", "GITHUB_ACCESS_TOKEN=" <> unpack token]
             , ["--volume", "/tmp:/tmp"]
@@ -99,82 +117,38 @@ getAccessToken env installationId =
                 ["get-access-token", unpack env, show installationId]
                 readProcessStdout_
 
-setupIntegrationRb
-    :: FilePath
-    -> Channel
-    -> Text -- ^ Token
-    -> Text -- ^ owner/name
-    -> Text -- ^ branch
-    -> Text
-setupIntegrationRb manifest channel token repo branch = [st|
-FILES = {}
+withTemporaryClone
+    :: ( MonadUnliftIO m
+       , MonadReader env m
+       , HasLogFunc env
+       , HasProcessContext env
+       )
+    => Text
+    -> m a
+    -> m a
+withTemporaryClone url f = withSystemTempDirectory "" $ \tmp -> do
+    git_ "clone" [url, pack tmp]
+    withCurrentDirectory tmp f
 
-def system_(*args)
-  system(*args) or raise "system error: " + args.inspect
-end
+git
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    => Text
+    -> [Text]
+    -> m Bool
+git cmd args = do
+    ec <- proc "git" (map unpack $ cmd : args) runProcess
+    pure $ ec == ExitSuccess
 
-restylers = YAML.load_file("#{manifest}").map do |restyler|
-  name = restyler.fetch("name")
-  tests = restyler.
-    fetch("metadata", {}).
-    fetch("tests", [])
-
-  tests.each.with_index do |test, n|
-    # N.B. if different cases need the same support file this won't work.
-    # If/when that happens we can consider some kind of workaround.
-    if support = test["support"]
-      support_path = support.fetch("path")
-      FILES[support_path] = support.fetch("contents")
-    end
-
-    ext = test["extension"] || "example"
-    path = name + "/test-file-" + n.to_s + "." + ext
-    contents = test.fetch("contents")
-
-    # Can't commit CRLF, so skip that test case
-    unless contents.include?("\r\n")
-      FILES[path] = contents
-    end
-  end
-
-  {
-    name => {
-      "enabled" => true,
-      "include" => [name + "/**/*"]
-    }
-  }
-end
-
-FILES[".restyled.yaml"] = YAML.dump({
-  "restylers_version" => "#{channelName channel}",
-  "restylers" => restylers
-})
-
-Dir.mktmpdir do |dir|
-  url = "https://x-access-token:#{token}@github.com/#{repo}.git"
-  system_("git", "clone", url, dir)
-
-  Dir.chdir(dir) do
-    system("git", "checkout", "--quiet", "#{branch}") or
-      system_("git", "checkout", "--quiet", "-b", "#{branch}")
-
-    # Clean directories, to be recreated
-    FILES.keys.map { |p| File.dirname(p) }.uniq.each do |d|
-      if d != '.'
-        FileUtils.rm_rf d
-      end
-    end
-
-    FILES.each do |path, contents|
-      FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, contents)
-    end
-
-    system_("git", "add", ".")
-
-    if system("git", "commit", "-m", "Update test case files")
-      system_("git", "push")
-    end
-  end
-end
-|]
+git_
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    => Text
+    -> [Text]
+    -> m ()
+git_ cmd args = do
+    success <- git cmd args
+    unless success
+        $ throwString
+        $ "git command was not successful: "
+        <> show cmd
+        <> " "
+        <> show args
