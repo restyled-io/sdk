@@ -1,6 +1,5 @@
 module Restylers.Options
-    ( Command(..)
-    , Options(..)
+    ( Options(..)
     , HasOptions(..)
     , parseOptions
     )
@@ -12,16 +11,14 @@ import Options.Applicative
 import Restylers.Registry
 import RIO.NonEmpty (some1)
 
-data Command
-    = Build FilePath
-    | Release FilePath (NonEmpty FilePath)
-    deriving stock Show
-
 data Options = Options
     { oRegistry :: Maybe Registry
     , oTag :: Text
     , oDebug :: Bool
-    , oCommand :: Command
+    , oPush :: Bool
+    , oAlways :: Bool
+    , oWrite :: Maybe FilePath
+    , oInputs :: NonEmpty FilePath
     }
     deriving stock Show
 
@@ -53,26 +50,26 @@ options = Options
         <> long "debug"
         <> help "Log more verbosity"
         )
-    <*> subparser
-        (  command "build" (parse
-            (Build <$> yamlArgument)
-            "Build an image for Restylers described in info.yaml files")
-        <> command "release" (parse
-            (Release
-                <$> strOption
-                    (  short 'w'
-                    <> long "write"
-                    <> help "File released Restylers to file"
-                    <> metavar "PATH"
-                    <> value "restylers.yaml"
-                    )
-                <*> some1 yamlArgument)
-            "Released (push) versioned images")
+    <*> switch
+        (  short 'p'
+        <> long "push"
+        <> help "Push built images"
         )
-
-yamlArgument :: Parser FilePath
-yamlArgument =
-    argument str (help "Path to Restyler info.yaml" <> metavar "PATH")
+    <*> switch
+        (  short 'a'
+        <> long "always"
+        <> help "Build and push even if image already exists"
+        )
+    <*> optional (strOption
+        (  short 'w'
+        <> long "write"
+        <> help "Output restylers.yaml to PATH"
+        <> metavar "PATH"
+        ))
+    <*> some1 (argument str
+        (  help "Path to Restyler info.yaml"
+        <> metavar "PATH"
+        ))
 
 parse :: Parser a -> String -> ParserInfo a
 parse p d = info (p <**> helper) $ fullDesc <> progDesc d
