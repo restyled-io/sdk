@@ -1,0 +1,2 @@
+#!/bin/sh
+exec docker pull "restyled/sdk${RESTYLED_SDK_TAG:-:main}"
