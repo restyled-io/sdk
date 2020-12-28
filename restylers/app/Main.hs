@@ -49,10 +49,15 @@ build
     -> m RestylerImage
 build push info = do
     image <- getRestylerImage info
-    unlessM (doesRestylerImageExist image) $ do
-        lintRestyler info
-        buildRestylerImage info image
-        testRestylerImage info image
-        when push $ pushRestylerImage image
+    logInfo $ "Restyler image: " <> display image
+    exists <- doesRestylerImageExist image
+
+    if exists
+        then logInfo "Image exists, skipping"
+        else do
+            lintRestyler info
+            buildRestylerImage info image
+            testRestylerImage info image
+            when push $ pushRestylerImage image
 
     pure image
