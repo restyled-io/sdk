@@ -3,8 +3,7 @@ module Restylers.Build
     , getRestylerImage
     , doesRestylerImageExist
     , pushRestylerImage
-    )
-where
+    ) where
 
 import RIO hiding (to)
 

@@ -5,8 +5,7 @@ module Restylers.Info.Build
     ( RestylerBuild(..)
     , restylerBuild
     , build
-    )
-where
+    ) where
 
 import RIO
 
