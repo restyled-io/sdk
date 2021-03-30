@@ -4,7 +4,6 @@ license: MIT
 
 dependencies:
   - base
-  - rio
 
 default-extensions:
   - BangPatterns
@@ -35,19 +34,17 @@ default-extensions:
 ghc-options: -Weverything
   -Wno-unsafe
   -Wno-missing-import-lists
+  -Wno-missing-safe-haskell-mode
+  -Wno-prepositive-qualified-module
 
 library:
   source-dirs: src
   dependencies:
     - Diff
     - aeson
-    - errors
-    - hspec
-    - http-conduit
-    - http-types
-    - lens
     - mtl
     - optparse-applicative
+    - rio
     - semigroups
     - yaml
 
@@ -57,7 +54,7 @@ executables:
     source-dirs: app
     dependencies:
       - restylers
-      - yaml
+      - rio
 
 tests:
   doctest:
@@ -72,3 +69,4 @@ tests:
       - aeson
       - hspec
       - restylers
+      - rio
