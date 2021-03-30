@@ -35,13 +35,15 @@ restylerBuild yaml = RestylerBuild
 
 build
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
-    => RestylerBuild
+    => Bool
+    -> RestylerBuild
     -> RestylerImage
     -> m RestylerImage
-build RestylerBuild {..} image = image <$ proc "docker" args runProcess_
+build quiet RestylerBuild {..} image = image <$ proc "docker" args runProcess_
   where
     args = concat
-        [ ["build", "--quiet"]
+        [ ["build"]
+        , [ "--quiet" | quiet ]
         , ["--tag", unImage image]
         , ["--file", dockerfile]
         , [path]

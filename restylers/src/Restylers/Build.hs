@@ -20,18 +20,25 @@ import RIO.Text (unpack)
 import qualified RIO.Text as T
 
 buildRestylerImage
-    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    :: ( MonadIO m
+       , MonadReader env m
+       , HasLogFunc env
+       , HasProcessContext env
+       , HasOptions env
+       )
     => RestylerInfo
     -> RestylerImage
     -> m ()
-buildRestylerImage info image = case Info.imageSource info of
-    Explicit x -> logInfo $ "Not bulding explicit image, " <> display x
-    BuildVersionCmd _name _cmd options -> do
-        logInfo $ "Building " <> display image
-        void $ Build.build options image
-    BuildVersion _name _version options -> do
-        logInfo $ "Building " <> display image
-        void $ Build.build options image
+buildRestylerImage info image = do
+    quiet <- not . oDebug <$> view optionsL
+    case Info.imageSource info of
+        Explicit x -> logInfo $ "Not bulding explicit image, " <> display x
+        BuildVersionCmd _name _cmd options -> do
+            logInfo $ "Building " <> display image
+            void $ Build.build quiet options image
+        BuildVersion _name _version options -> do
+            logInfo $ "Building " <> display image
+            void $ Build.build quiet options image
 
 getRestylerImage
     :: ( MonadIO m
@@ -50,7 +57,9 @@ getRestylerImage info = do
         BuildVersionCmd name cmd options -> do
             logInfo $ "Building " <> display name <> " for version_cmd"
             tag <- oTag <$> view optionsL
-            image <- Build.build options $ mkRestylerImage registry name tag
+            quiet <- not . oDebug <$> view optionsL
+            image <- Build.build quiet options
+                $ mkRestylerImage registry name tag
             version <- dockerRunSh image cmd
             let versioned = mkRestylerImage registry name version
             versioned <$ dockerTag image versioned
