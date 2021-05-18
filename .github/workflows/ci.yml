@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: freckle/stack-cache-action@main
+      - uses: freckle/stack-action@main
+        with:
+          hlint: false
+          weeder: false
+
+  image:
+    needs: [test]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: prep
+        run: |
+          image=restyled/sdk:$(echo "${{ github.sha }}" | head -c7)
+
+          if ${{ github.ref == 'refs/heads/main' }}; then
+            echo "::set-output name=tags::${image},restyled/sdk:main"
+          else
+            echo "::set-output name=tags::${image}"
+          fi
+
+      - id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-image-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-image-
+
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+          push: true
+          tags: ${{ steps.prep.outputs.tags }}
+
+      # Avoids ever-growing cache hitting limits
+      - run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
