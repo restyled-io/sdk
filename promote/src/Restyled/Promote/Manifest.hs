@@ -3,18 +3,17 @@ module Restyled.Promote.Manifest
     , diffManifests
     , copyManifest
     , uploadManifest
-    )
-where
+    ) where
 
 import RIO
 
 import Conduit
 import Network.HTTP.Simple
-import Restyled.Promote.Channel
 import qualified RIO.ByteString.Lazy as BSL
 import RIO.Process
 import RIO.Text (unpack)
 import qualified RIO.Text as T
+import Restyled.Promote.Channel
 
 withManifest :: MonadUnliftIO m => Channel -> (FilePath -> m a) -> m a
 withManifest channel f =
@@ -59,8 +58,8 @@ copyManifest_
     -> Channel
     -> m ()
 copyManifest_ fromItem toChannel = do
-    bucket <- getStackOutput "prod-docs" "BucketName"
-    distributionId <- getStackOutput "prod-docs" "DistributionId"
+    bucket <- getStackOutput "site-docs" "BucketName"
+    distributionId <- getStackOutput "site-docs" "DistributionId"
 
     let
         cpFrom = case fromItem of
