@@ -58,8 +58,8 @@ copyManifest_
     -> Channel
     -> m ()
 copyManifest_ fromItem toChannel = do
-    bucket <- getStackOutput "site-docs" "BucketName"
-    distributionId <- getStackOutput "site-docs" "DistributionId"
+    bucket <- getStackOutput "sites-docs" "BucketName"
+    distributionId <- getStackOutput "sites-docs" "DistributionId"
 
     let
         cpFrom = case fromItem of

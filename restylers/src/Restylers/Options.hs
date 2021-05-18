@@ -2,23 +2,21 @@ module Restylers.Options
     ( Options(..)
     , HasOptions(..)
     , parseOptions
-    )
-where
+    ) where
 
 import RIO
 
 import Options.Applicative
 import Restylers.Registry
-import RIO.NonEmpty (some1)
 
 data Options = Options
     { oRegistry :: Maybe Registry
-    , oTag :: Text
+    , oSha :: Text
     , oDebug :: Bool
+    , oBuild :: Bool
     , oPush :: Bool
-    , oAlways :: Bool
     , oWrite :: Maybe FilePath
-    , oInputs :: NonEmpty FilePath
+    , oInput :: FilePath
     }
     deriving stock Show
 
@@ -26,7 +24,7 @@ class HasOptions env where
     optionsL :: Lens' env Options
 
 parseOptions :: IO Options
-parseOptions = execParser $ parse options "Process Restylers"
+parseOptions = execParser $ withInfo "Build, test, and push Restylers" options
 
 -- brittany-disable-next-binding
 
@@ -39,10 +37,10 @@ options = Options
         <> metavar "PREFIX"
         ))
     <*> strOption
-        (  short 't'
-        <> long "tag"
-        <> help "Tag to use for development images"
-        <> metavar "TAG"
+        (  short 's'
+        <> long "sha"
+        <> help "Commit SHA to use as tag for input images"
+        <> metavar "SHA"
         <> value "dev"
         )
     <*> switch
@@ -50,26 +48,26 @@ options = Options
         <> long "debug"
         <> help "Log more verbosity"
         )
+    <*> (not <$> switch
+        (  short 'B'
+        <> long "no-build"
+        <> help "Skip build before testing"
+        ))
     <*> switch
         (  short 'p'
         <> long "push"
-        <> help "Push built images"
-        )
-    <*> switch
-        (  short 'a'
-        <> long "always"
-        <> help "Build and push even if image already exists"
+        <> help "Push version-tagged image"
         )
     <*> optional (strOption
         (  short 'w'
         <> long "write"
-        <> help "Output restylers.yaml to PATH"
+        <> help "Output restyler definition to PATH"
         <> metavar "PATH"
         ))
-    <*> some1 (argument str
+    <*> argument str
         (  help "Path to Restyler info.yaml"
         <> metavar "PATH"
-        ))
+        )
 
-parse :: Parser a -> String -> ParserInfo a
-parse p d = info (p <**> helper) $ fullDesc <> progDesc d
+withInfo :: String -> Parser a -> ParserInfo a
+withInfo d p = info (p <**> helper) $ fullDesc <> progDesc d

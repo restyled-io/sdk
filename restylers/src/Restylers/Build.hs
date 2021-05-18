@@ -1,23 +1,23 @@
 module Restylers.Build
     ( buildRestylerImage
-    , getRestylerImage
+    , tagRestylerImage
     , doesRestylerImageExist
     , pushRestylerImage
     ) where
 
 import RIO hiding (to)
 
+import qualified RIO.ByteString.Lazy as BSL
+import qualified RIO.Map as Map
+import RIO.Process
+import RIO.Text (unpack)
+import qualified RIO.Text as T
 import Restylers.Image
 import qualified Restylers.Info.Build as Build
 import Restylers.Info.Resolved (ImageSource(..), RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
 import Restylers.Options
 import Restylers.Version
-import qualified RIO.ByteString.Lazy as BSL
-import qualified RIO.Map as Map
-import RIO.Process
-import RIO.Text (unpack)
-import qualified RIO.Text as T
 
 buildRestylerImage
     :: ( MonadIO m
@@ -27,21 +27,24 @@ buildRestylerImage
        , HasOptions env
        )
     => RestylerInfo
-    -> RestylerImage
     -> m ()
-buildRestylerImage info image = do
+buildRestylerImage info = do
+    registry <- oRegistry <$> view optionsL
+    sha <- oSha <$> view optionsL
     quiet <- not . oDebug <$> view optionsL
     case Info.imageSource info of
         Explicit x -> logInfo $ "Not bulding explicit image, " <> display x
-        BuildVersionCmd _name _cmd options -> do
+        BuildVersionCmd name _cmd options -> do
+            let image = mkRestylerImage registry name sha
             logInfo $ "Building " <> display image
             void $ Build.build quiet options image
-        BuildVersion _name _version options -> do
+        BuildVersion name _version options -> do
+            let image = mkRestylerImage registry name sha
             logInfo $ "Building " <> display image
             void $ Build.build quiet options image
 
-getRestylerImage
-    :: ( MonadIO m
+tagRestylerImage
+    :: ( MonadUnliftIO m
        , MonadReader env m
        , HasLogFunc env
        , HasProcessContext env
@@ -49,23 +52,31 @@ getRestylerImage
        )
     => RestylerInfo
     -> m RestylerImage
-getRestylerImage info = do
+tagRestylerImage info = do
     registry <- oRegistry <$> view optionsL
+
+    let
+        mkVersioned name getVersion = do
+            sha <- oSha <$> view optionsL
+            let image = mkRestylerImage registry name sha
+            version <- getVersion image
+            let versioned = mkRestylerImage registry name version
+            versioned <$ dockerTag image versioned
 
     case Info.imageSource info of
         Explicit image -> pure image
-        BuildVersionCmd name cmd options -> do
-            logInfo $ "Building " <> display name <> " for version_cmd"
-            tag <- oTag <$> view optionsL
-            quiet <- not . oDebug <$> view optionsL
-            image <- Build.build quiet options
-                $ mkRestylerImage registry name tag
-            version <- dockerRunSh image cmd
-            let versioned = mkRestylerImage registry name version
-            versioned <$ dockerTag image versioned
+        BuildVersionCmd name cmd _ -> do
+            logInfo $ "Running " <> display name <> " for version_cmd"
+            mkVersioned name (`dockerRunSh` cmd)
         BuildVersion name explicitVersion _ -> do
-            let version = unRestylerVersion explicitVersion
-            pure $ mkRestylerImage registry name version
+            logInfo $ "Tagging " <> display name <> " as explicit version"
+            mkVersioned name $ \image -> do
+                pullRestylerImage image `catch` \ex ->
+                    logWarn
+                        $ "Error pulling ("
+                        <> displayShow (eceExitCode ex)
+                        <> "), assuming local-only image"
+                pure $ unRestylerVersion explicitVersion
 
 doesRestylerImageExist
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
@@ -78,6 +89,14 @@ doesRestylerImageExist image =
             ["manifest", "inspect", unImage image]
             readProcess
         pure $ ec == ExitSuccess
+
+pullRestylerImage
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    => RestylerImage
+    -> m ()
+pullRestylerImage image = do
+    logInfo $ "Pulling " <> display image
+    proc "docker" ["pull", unImage image] runProcess_
 
 pushRestylerImage
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)

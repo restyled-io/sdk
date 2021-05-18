@@ -1,0 +1,15 @@
+name: Restyled SDK
+author: pbrisbin
+description: Run commands in restyled:sdk
+inputs:
+  command:
+    description: Full command, passed through sh -c
+    required: true
+outputs: {}
+runs:
+  using: docker
+  image: docker://restyled/sdk:action
+  entrypoint: sh
+  args:
+    - -c
+    - 'REALPWD="$RUNNER_WORKSPACE/$(basename $GITHUB_REPOSITORY)" restyled ${{ inputs.command }}'
