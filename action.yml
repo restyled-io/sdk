@@ -12,4 +12,4 @@ runs:
   entrypoint: sh
   args:
     - -c
-    - 'restyled ${{ inputs.command }}'
+    - 'pwd; env; restyled ${{ inputs.command }}'
