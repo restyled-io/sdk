@@ -2,21 +2,22 @@ module Restylers.Options
     ( Options(..)
     , HasOptions(..)
     , parseOptions
-    )
-where
+    ) where
 
 import RIO
 
 import Options.Applicative
-import Restylers.Registry
 import RIO.NonEmpty (some1)
+import Restylers.Registry
 
 data Options = Options
     { oRegistry :: Maybe Registry
-    , oTag :: Text
+    , oSha :: Text
     , oDebug :: Bool
+    , oLint :: Bool
+    , oBuild :: Bool
+    , oTest :: Bool
     , oPush :: Bool
-    , oAlways :: Bool
     , oWrite :: Maybe FilePath
     , oInputs :: NonEmpty FilePath
     }
@@ -39,11 +40,10 @@ options = Options
         <> metavar "PREFIX"
         ))
     <*> strOption
-        (  short 't'
-        <> long "tag"
-        <> help "Tag to use for development images"
-        <> metavar "TAG"
-        <> value "dev"
+        (  short 's'
+        <> long "sha"
+        <> help "Commit SHA to use as tag for input images"
+        <> metavar "SHA"
         )
     <*> switch
         (  short 'd'
@@ -51,14 +51,24 @@ options = Options
         <> help "Log more verbosity"
         )
     <*> switch
+        (  short 'l'
+        <> long "lint"
+        <> help "Lint Dockerfiles"
+        )
+    <*> switch
+        (  short 'b'
+        <> long "build"
+        <> help "Build images"
+        )
+    <*> switch
+        (  short 'T'
+        <> long "test"
+        <> help "Test built images"
+        )
+    <*> switch
         (  short 'p'
         <> long "push"
         <> help "Push built images"
-        )
-    <*> switch
-        (  short 'a'
-        <> long "always"
-        <> help "Build and push even if image already exists"
         )
     <*> optional (strOption
         (  short 'w'

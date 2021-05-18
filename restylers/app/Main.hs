@@ -1,7 +1,6 @@
 module Main
     ( main
-    )
-where
+    ) where
 
 import RIO
 
@@ -23,21 +22,30 @@ main = do
         runRIO app $ do
             logDebug $ "Options: " <> displayShow opts
 
-            restylers <- for oInputs $ \yaml -> do
+            when (not oTest && (oPush || isJust oWrite))
+                $ logWarn "--push and --write do nothing without --test"
+
+            when oLint $ do
+                results <- for oInputs $ \yaml -> do
+                    logDebug $ "Input: " <> fromString yaml
+                    lintRestyler =<< Info.load yaml
+
+                when (or results) $ do
+                    logError "Exiting due to Lint errors"
+                    exitFailure
+
+            when oBuild $ for_ oInputs $ \yaml -> do
                 logDebug $ "Input: " <> fromString yaml
                 info <- Info.load yaml
-                image <- getRestylerImage info
-                logInfo $ "Restyler image: " <> display image
-                exists <- doesRestylerImageExist image
+                buildRestylerImage info
 
-                if exists && not oAlways
-                    then logInfo "Image exists, skipping"
-                    else do
-                        lintRestyler info
-                        buildRestylerImage info image
-                        testRestylerImage info image
-                        when oPush $ pushRestylerImage image
+            when oTest $ do
+                restylers <- for oInputs $ \yaml -> do
+                    logDebug $ "Input: " <> fromString yaml
+                    info <- Info.load yaml
+                    image <- tagRestylerImage info
+                    testRestylerImage info image
+                    when oPush $ pushRestylerImage image
+                    pure $ toRestyler info image
 
-                pure $ toRestyler info image
-
-            traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
+                traverse_ (liftIO . (`Manifest.write` restylers)) oWrite

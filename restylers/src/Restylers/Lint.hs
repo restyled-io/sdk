@@ -1,18 +1,17 @@
 module Restylers.Lint
     ( lintRestyler
-    )
-where
+    ) where
 
 import RIO
 
 import Data.Aeson
-import qualified Restylers.Info.Build as Build
-import Restylers.Info.Resolved (ImageSource(..), RestylerInfo)
-import qualified Restylers.Info.Resolved as Info
 import RIO.Directory (getCurrentDirectory)
 import RIO.FilePath ((</>))
 import RIO.Process
 import qualified RIO.Text as T
+import qualified Restylers.Info.Build as Build
+import Restylers.Info.Resolved (ImageSource(..), RestylerInfo)
+import qualified Restylers.Info.Resolved as Info
 import System.Environment (lookupEnv)
 
 data LintError = LintError
@@ -51,10 +50,10 @@ wiki code
 lintRestyler
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
     => RestylerInfo
-    -> m ()
+    -> m Bool
 lintRestyler info = do
     case Info.imageSource info of
-        Explicit{} -> logWarn "Not linting explicit image"
+        Explicit{} -> False <$ logWarn "Not linting explicit image"
         BuildVersionCmd _ _ options ->
             lintDockerfile $ Build.dockerfile options
         BuildVersion _ _ options -> lintDockerfile $ Build.dockerfile options
@@ -62,7 +61,7 @@ lintRestyler info = do
 lintDockerfile
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
     => FilePath
-    -> m ()
+    -> m Bool
 lintDockerfile dockerfile = do
     logInfo $ "Linting " <> fromString dockerfile
 
@@ -71,7 +70,7 @@ lintDockerfile dockerfile = do
     -- can (only) figure out if we're told (e.g. via ENV)
     cwd <- maybe getCurrentDirectory pure =<< liftIO (lookupEnv "REALPWD")
 
-    (ec, bs) <- proc
+    bs <- proc
         "docker"
         (concat
             [ ["run", "--rm"]
@@ -83,18 +82,13 @@ lintDockerfile dockerfile = do
             , ["/Dockerfile"]
             ]
         )
-        readProcessStdout
+        readProcessStdout_
 
-    logDebug $ "hadolint exit code: " <> displayShow ec
     logDebug $ "hadolint stdout: " <> displayShow bs
 
     case eitherDecode bs of
         Left err -> throwString $ "Unable to read hadolint output: " <> err
+        Right [] -> pure False
         Right (errors :: [LintError]) -> do
-            unless (null errors)
-                $ logError
-                $ "Lint errors found in "
-                <> fromString dockerfile
-            traverse_ (logError . display) errors
-
-    when (ec /= ExitSuccess) $ exitWith ec
+            logError $ "Lint errors found in " <> fromString dockerfile
+            True <$ traverse_ (logError . display) errors
