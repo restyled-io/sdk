@@ -12,4 +12,4 @@ runs:
   entrypoint: sh
   args:
     - -c
-    - 'pwd; env; restyled ${{ inputs.command }}'
+    - 'REALPWD="$RUNNER_WORKSPACE/$(basename $GITHUB_REPOSITORY)" restyled ${{ inputs.command }}'
