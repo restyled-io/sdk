@@ -5,20 +5,7 @@ on:
     branches: main
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: freckle/stack-cache-action@main
-      - uses: freckle/stack-action@main
-        with:
-          hlint: false
-          weeder: false
-
   image:
-    needs: [test]
-
     runs-on: ubuntu-latest
 
     steps:
