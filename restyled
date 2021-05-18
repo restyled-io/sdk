@@ -32,10 +32,10 @@ for config in "${configs[@]}"; do
 done
 
 : "${GNUPGHOME:=$HOME/.gnupg}"
-: "${RESTYLED_SDK_TAG:=:main}"
+: "${RESTYLED_SDK_TAG:=main}"
 
 if [ -d "$GNUPGHOME" ]; then
   options+=(--volume "$GNUPGHOME:/root/.gnupg")
 fi
 
-exec docker run "${options[@]}" "restyled/sdk$RESTYLED_SDK_TAG" "$@"
+exec docker run "${options[@]}" "restyled/sdk:$RESTYLED_SDK_TAG" "$@"
