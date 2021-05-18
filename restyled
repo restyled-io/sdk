@@ -2,7 +2,7 @@
 set -eu
 
 options=(
-  --rm --interactive
+  --rm
   --env "REALPWD=$PWD"
   --volume "$PWD":/code
   --volume /tmp:/tmp
@@ -10,7 +10,7 @@ options=(
 )
 
 if [ -t 0 ]; then
-  options+=(--tty)
+  options+=(--interactive --tty)
 fi
 
 if [ -n "${AWS_PROFILE:-""}" ]; then
