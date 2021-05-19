@@ -14,6 +14,7 @@ data Options = Options
     , oSha :: Text
     , oDebug :: Bool
     , oBuild :: Bool
+    , oTest :: Bool
     , oPush :: Bool
     , oWrite :: Maybe FilePath
     , oInput :: FilePath
@@ -52,6 +53,11 @@ options = Options
         (  short 'B'
         <> long "no-build"
         <> help "Skip build before testing"
+        ))
+    <*> (not <$> switch
+        (  short 'T'
+        <> long "no-test"
+        <> help "Skip test"
         ))
     <*> switch
         (  short 'p'

@@ -26,6 +26,7 @@ testOptions _ = Options
     , oSha = "dev"
     , oDebug = False
     , oBuild = False
+    , oTest = False
     , oPush = False
     , oWrite = Nothing
     , oInput = undefined
