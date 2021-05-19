@@ -5,14 +5,13 @@ module Restylers.Lint
 import RIO
 
 import Data.Aeson
-import RIO.Directory (getCurrentDirectory)
 import RIO.FilePath ((</>))
 import RIO.Process
 import qualified RIO.Text as T
+import Restylers.Directory
 import qualified Restylers.Info.Build as Build
 import Restylers.Info.Resolved (ImageSource(..), RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
-import System.Environment (lookupEnv)
 
 data LintError = LintError
     { code :: Text
@@ -65,17 +64,14 @@ lintDockerfile
 lintDockerfile dockerfile = do
     logInfo $ "Linting " <> fromString dockerfile
 
-    -- On CI, we are docker-within-docker, which means our PWD is "/code", but
-    -- we need to mount these files using the non-containerized PWD, which we
-    -- can (only) figure out if we're told (e.g. via ENV)
-    cwd <- maybe getCurrentDirectory pure =<< liftIO (lookupEnv "REALPWD")
+    chd <- getCurrentHostDirectory
 
     bs <- proc
         "docker"
         (concat
             [ ["run", "--rm"]
-            , ["--volume", cwd </> ".hadolint.yaml:/config.yaml:ro"]
-            , ["--volume", cwd </> dockerfile <> ":/Dockerfile:ro"]
+            , ["--volume", chd </> ".hadolint.yaml:/config.yaml:ro"]
+            , ["--volume", chd </> dockerfile <> ":/Dockerfile:ro"]
             , ["hadolint/hadolint", "hadolint"]
             , ["--config", "/config.yaml"]
             , ["--format", "json"]

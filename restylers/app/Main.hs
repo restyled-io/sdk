@@ -45,7 +45,13 @@ main = do
                     info <- Info.load yaml
                     image <- tagRestylerImage info
                     testRestylerImage info image
-                    when oPush $ pushRestylerImage image
+
+                    when oPush $ do
+                        exists <- doesRestylerImageExist image
+                        if exists
+                            then logWarn "Not pushing, image exists"
+                            else pushRestylerImage image
+
                     pure $ toRestyler info image
 
                 traverse_ (liftIO . (`Manifest.write` restylers)) oWrite

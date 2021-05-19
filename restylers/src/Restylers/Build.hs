@@ -70,7 +70,9 @@ tagRestylerImage info = do
             mkVersioned name (`dockerRunSh` cmd)
         BuildVersion name explicitVersion _ -> do
             logInfo $ "Tagging " <> display name <> " as explicit version"
-            mkVersioned name $ \_ -> pure $ unRestylerVersion explicitVersion
+            mkVersioned name $ \image -> do
+                pullRestylerImage image
+                pure $ unRestylerVersion explicitVersion
 
 doesRestylerImageExist
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
@@ -83,6 +85,14 @@ doesRestylerImageExist image =
             ["manifest", "inspect", unImage image]
             readProcess
         pure $ ec == ExitSuccess
+
+pullRestylerImage
+    :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
+    => RestylerImage
+    -> m ()
+pullRestylerImage image = do
+    logInfo $ "Pulling " <> display image
+    proc "docker" ["pull", unImage image] runProcess_
 
 pushRestylerImage
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
