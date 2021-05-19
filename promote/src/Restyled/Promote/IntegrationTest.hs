@@ -9,15 +9,15 @@ where
 
 import RIO
 
-import Restyled.Promote.Channel
-import Control.Monad.Extra (orM, andM)
-import Restyled.Promote.Manifest
+import Control.Monad.Extra (andM, orM)
 import qualified RIO.ByteString.Lazy as BSL
-import RIO.Process
 import RIO.Directory (withCurrentDirectory)
-import RIO.Text (unpack, pack)
-import Restyled.Promote.IntegrationTest.Setup
+import RIO.Process
+import RIO.Text (pack, unpack)
 import qualified RIO.Text as T
+import Restyled.Promote.Channel
+import Restyled.Promote.IntegrationTest.Setup
+import Restyled.Promote.Manifest
 
 data IntegrationTests
     = IntegrationTestDemo45

@@ -10,10 +10,10 @@ module Restylers.Info.Build
 import RIO
 
 import Data.Aeson
-import Restylers.Image
 import RIO.FilePath (takeDirectory, (</>))
 import RIO.Process
 import RIO.Text (unpack)
+import Restylers.Image
 
 data RestylerBuild = RestylerBuild
     { path :: FilePath

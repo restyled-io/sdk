@@ -12,6 +12,8 @@ import RIO
 import Data.Aeson
 import Data.Semigroup (Last(..))
 import qualified Data.Yaml as Yaml
+import RIO.FilePath ((<.>), (</>))
+import RIO.Text (unpack)
 import Restylers.Image
 import qualified Restylers.Info as Info
 import Restylers.Info.Build (RestylerBuild, restylerBuild)
@@ -20,8 +22,6 @@ import qualified Restylers.Info.Metadata as Metadata
 import Restylers.Name
 import qualified Restylers.Override as Override
 import Restylers.Version
-import RIO.FilePath ((<.>), (</>))
-import RIO.Text (unpack)
 
 data RestylerInfo = RestylerInfo
     { enabled :: Bool

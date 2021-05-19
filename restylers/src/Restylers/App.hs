@@ -6,8 +6,8 @@ where
 
 import RIO
 
-import Restylers.Options
 import RIO.Process
+import Restylers.Options
 
 data App = App
     { appLogFunc :: LogFunc

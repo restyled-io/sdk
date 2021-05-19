@@ -8,11 +8,11 @@ where
 import RIO
 
 import Data.Aeson
-import Restylers.Name
-import Restylers.Registry
 import RIO.Text (unpack)
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T (breakOnEnd)
+import Restylers.Name
+import Restylers.Registry
 
 data RestylerImage = RestylerImage
     { riRegistry :: Maybe Registry
