@@ -10,12 +10,12 @@ import RIO
 
 import Data.Aeson
 import qualified Data.Yaml as Yaml
+import RIO.Directory (createDirectoryIfMissing)
 import RIO.FilePath (takeDirectory, (<.>), (</>))
 import qualified RIO.Map as Map
 import RIO.Text (unpack)
 import qualified RIO.Text as T
 import Restyled.Promote.Channel
-import RIO.Directory (createDirectoryIfMissing)
 
 data Restyler = Restyler
     { name :: Text
