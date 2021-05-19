@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 18b19dc1aa7d43eeac34e67f4c29066f72d44b71c03ad3cf0d4f58b8f7d09357
+-- hash: d1f635c04a5c8286e5f2e397c137970bbb22a33e5dc395d6c775980e233f425f
 
 name:           restylers
 version:        0.0.0.0
@@ -36,7 +36,7 @@ library
   hs-source-dirs:
       src
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
-  ghc-options: -Weverything -Wno-unsafe -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
   build-depends:
       Diff
     , aeson
@@ -55,7 +55,7 @@ executable restylers
   hs-source-dirs:
       app
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
-  ghc-options: -Weverything -Wno-unsafe -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
   build-depends:
       base
     , restylers
@@ -70,7 +70,7 @@ test-suite doctest
   hs-source-dirs:
       doctest
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
-  ghc-options: -Weverything -Wno-unsafe -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
   build-depends:
       base
     , doctest
@@ -86,7 +86,7 @@ test-suite spec
   hs-source-dirs:
       test
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
-  ghc-options: -Weverything -Wno-unsafe -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
   build-depends:
       aeson
     , base

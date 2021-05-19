@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 992cd084a8b6ef881693470be593f1ed102b7e6cc39b94b1b8725a15d8daa138
+-- hash: ce814f2a8e54b2b9053409204a305fa8a09bf36ed37b753a40a05143632ca854
 
 name:           promote
 version:        0.0.0.0
@@ -23,7 +23,7 @@ library
   hs-source-dirs:
       src
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
-  ghc-options: -Weverything -Wno-unsafe -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
   build-depends:
       aeson
     , base
@@ -42,7 +42,7 @@ executable promote
   hs-source-dirs:
       app
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
-  ghc-options: -Weverything -Wno-unsafe -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wall -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Weverything -Wno-unsafe -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
     , promote
