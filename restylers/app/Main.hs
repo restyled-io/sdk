@@ -53,5 +53,5 @@ testRestyler build push mWrite info = do
             then logWarn "Not pushing, image exists"
             else pushRestylerImage image
 
-    for_ mWrite $ \write ->
-        liftIO $ Manifest.write write $ pure $ toRestyler info image
+    let restylers = pure $ toRestyler info image
+    traverse_ (liftIO . (`Manifest.write` restylers)) mWrite
