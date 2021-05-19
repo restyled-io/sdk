@@ -4,20 +4,20 @@ module Restylers.Options
     , parseOptions
     ) where
 
-import RIO
+import           RIO
 
-import Options.Applicative
-import Restylers.Registry
+import           Options.Applicative
+import           Restylers.Registry
 
 data Options = Options
     { oRegistry :: Maybe Registry
-    , oSha :: Text
-    , oDebug :: Bool
-    , oBuild :: Bool
-    , oTest :: Bool
-    , oPush :: Bool
-    , oWrite :: Maybe FilePath
-    , oInput :: FilePath
+    , oSha      :: Text
+    , oDebug    :: Bool
+    , oBuild    :: Bool
+    , oTest     :: Bool
+    , oPush     :: Bool
+    , oWrite    :: Maybe FilePath
+    , oInput    :: FilePath
     }
     deriving stock Show
 

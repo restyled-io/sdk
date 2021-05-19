@@ -5,19 +5,19 @@ module Restylers.Build
     , pushRestylerImage
     ) where
 
-import RIO hiding (to)
+import           RIO                     hiding (to)
 
-import qualified RIO.ByteString.Lazy as BSL
-import qualified RIO.Map as Map
-import RIO.Process
-import RIO.Text (unpack)
-import qualified RIO.Text as T
-import Restylers.Image
-import qualified Restylers.Info.Build as Build
-import Restylers.Info.Resolved (ImageSource(..), RestylerInfo)
+import qualified RIO.ByteString.Lazy     as BSL
+import qualified RIO.Map                 as Map
+import           RIO.Process
+import           RIO.Text                (unpack)
+import qualified RIO.Text                as T
+import           Restylers.Image
+import qualified Restylers.Info.Build    as Build
+import           Restylers.Info.Resolved (ImageSource (..), RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
-import Restylers.Options
-import Restylers.Version
+import           Restylers.Options
+import           Restylers.Version
 
 buildRestylerImage
     :: ( MonadIO m

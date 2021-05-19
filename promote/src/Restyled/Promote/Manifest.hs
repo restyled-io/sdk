@@ -5,15 +5,15 @@ module Restyled.Promote.Manifest
     , uploadManifest
     ) where
 
-import RIO
+import           RIO
 
-import Conduit
-import Network.HTTP.Simple
-import qualified RIO.ByteString.Lazy as BSL
-import RIO.Process
-import RIO.Text (unpack)
-import qualified RIO.Text as T
-import Restyled.Promote.Channel
+import           Conduit
+import           Network.HTTP.Simple
+import qualified RIO.ByteString.Lazy      as BSL
+import           RIO.Process
+import           RIO.Text                 (unpack)
+import qualified RIO.Text                 as T
+import           Restyled.Promote.Channel
 
 withManifest :: MonadUnliftIO m => Channel -> (FilePath -> m a) -> m a
 withManifest channel f =
@@ -64,7 +64,7 @@ copyManifest_ fromItem toChannel = do
     let
         cpFrom = case fromItem of
             Left path -> path
-            Right c -> unpack $ "s3://" <> bucket <> manifestPath c
+            Right c   -> unpack $ "s3://" <> bucket <> manifestPath c
 
     proc
         "aws"

@@ -2,17 +2,17 @@ module Main
     ( main
     ) where
 
-import RIO
+import           RIO
 
-import RIO.Directory (doesFileExist)
-import RIO.FilePath (takeExtension, (<.>), (</>))
-import Restylers.App
-import Restylers.Build
+import           RIO.Directory           (doesFileExist)
+import           RIO.FilePath            (takeExtension, (<.>), (</>))
+import           Restylers.App
+import           Restylers.Build
 import qualified Restylers.Info.Resolved as Info
-import Restylers.Manifest (toRestyler)
-import qualified Restylers.Manifest as Manifest
-import Restylers.Options
-import Restylers.Test
+import           Restylers.Manifest      (toRestyler)
+import qualified Restylers.Manifest      as Manifest
+import           Restylers.Options
+import           Restylers.Test
 
 main :: IO ()
 main = do

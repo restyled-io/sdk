@@ -4,18 +4,19 @@ module Restylers.Info.ResolvedSpec
     ( spec
     ) where
 
-import RIO
+import           RIO
 
-import RIO.Directory (createDirectoryIfMissing, withCurrentDirectory)
-import RIO.FilePath (takeDirectory, (<.>), (</>))
-import qualified RIO.Text as T
-import Restylers.Info.Build (restylerBuild)
-import Restylers.Info.Resolved (ImageSource(..))
+import           RIO.Directory           (createDirectoryIfMissing,
+                                          withCurrentDirectory)
+import           RIO.FilePath            (takeDirectory, (<.>), (</>))
+import qualified RIO.Text                as T
+import           Restylers.Info.Build    (restylerBuild)
+import           Restylers.Info.Resolved (ImageSource (..))
 import qualified Restylers.Info.Resolved as Info
-import Restylers.Name
-import Restylers.Options
-import Restylers.Version
-import Test.Hspec
+import           Restylers.Name
+import           Restylers.Options
+import           Restylers.Version
+import           Test.Hspec
 
 instance HasOptions SimpleApp where
     optionsL = lens testOptions undefined

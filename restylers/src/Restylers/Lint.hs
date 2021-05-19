@@ -3,24 +3,24 @@ module Restylers.Lint
     ( lintRestyler
     ) where
 
-import RIO
+import           RIO
 
-import Data.Aeson
-import RIO.FilePath ((</>))
-import RIO.Process
-import qualified RIO.Text as T
-import Restylers.Directory
-import qualified Restylers.Info.Build as Build
-import Restylers.Info.Resolved (ImageSource(..), RestylerInfo)
+import           Data.Aeson
+import           RIO.FilePath            ((</>))
+import           RIO.Process
+import qualified RIO.Text                as T
+import           Restylers.Directory
+import qualified Restylers.Info.Build    as Build
+import           Restylers.Info.Resolved (ImageSource (..), RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
 
 data LintError = LintError
-    { code :: Text
+    { code    :: Text
     , message :: Text
-    , level :: Text
-    , file :: FilePath
-    , line :: Natural
-    , column :: Natural
+    , level   :: Text
+    , file    :: FilePath
+    , line    :: Natural
+    , column  :: Natural
     }
     deriving stock Generic
     deriving anyclass FromJSON

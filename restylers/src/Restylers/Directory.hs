@@ -4,10 +4,10 @@ module Restylers.Directory
     , withCurrentDirectory
     ) where
 
-import RIO
+import           RIO
 
-import RIO.Directory
-import System.Environment (lookupEnv)
+import           RIO.Directory
+import           System.Environment (lookupEnv)
 
 -- | N.B. this will be wrong within 'withCurrentDirectory'
 getCurrentHostDirectory :: MonadIO m => m FilePath

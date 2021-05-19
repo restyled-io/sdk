@@ -2,19 +2,20 @@ module Restylers.Test
     ( testRestylerImage
     ) where
 
-import RIO
+import           RIO
 
-import RIO.FilePath (takeBaseName, (</>))
-import RIO.List (nub)
-import RIO.Process
-import RIO.Text (unpack)
-import Restylers.Directory
-import Restylers.Image
+import           RIO.FilePath            (takeBaseName, (</>))
+import           RIO.List                (nub)
+import           RIO.Process
+import           RIO.Text                (unpack)
+import           Restylers.Directory
+import           Restylers.Image
 import qualified Restylers.Info.Metadata as Metadata
-import Restylers.Info.Resolved (RestylerInfo)
+import           Restylers.Info.Resolved (RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
-import Restylers.Info.Test
-    (ExpectationFailure, Test, assertTestRestyled, testFilePath, writeTestFiles)
+import           Restylers.Info.Test     (ExpectationFailure, Test,
+                                          assertTestRestyled, testFilePath,
+                                          writeTestFiles)
 
 testRestylerImage
     :: ( MonadUnliftIO m
