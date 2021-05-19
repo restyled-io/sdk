@@ -25,12 +25,8 @@ testOptions _ = Options
     { oRegistry = Nothing
     , oSha = "dev"
     , oDebug = False
-    , oLint = False
-    , oBuild = False
-    , oTest = False
-    , oPush = False
-    , oWrite = Nothing
-    , oInputs = undefined
+    , oCommand = undefined
+    , oInput = undefined
     }
 
 spec :: Spec

@@ -4,8 +4,10 @@ module Main
 
 import RIO
 
+import RIO.Process
 import Restylers.App
 import Restylers.Build
+import Restylers.Info.Resolved (RestylerInfo)
 import qualified Restylers.Info.Resolved as Info
 import Restylers.Lint
 import Restylers.Manifest (toRestyler)
@@ -21,37 +23,35 @@ main = do
         app <- loadApp opts lf
         runRIO app $ do
             logDebug $ "Options: " <> displayShow opts
+            info <- Info.load oInput
 
-            when (not oTest && (oPush || isJust oWrite))
-                $ logWarn "--push and --write do nothing without --test"
+            case oCommand of
+                Lint -> lintRestyler info
+                Test b p w -> testRestyler b p w info
 
-            when oLint $ do
-                results <- for oInputs $ \yaml -> do
-                    logDebug $ "Input: " <> fromString yaml
-                    lintRestyler =<< Info.load yaml
+testRestyler
+    :: ( MonadUnliftIO m
+       , MonadReader env m
+       , HasLogFunc env
+       , HasProcessContext env
+       , HasOptions env
+       )
+    => Bool
+    -> Bool
+    -> Maybe FilePath
+    -> RestylerInfo
+    -> m ()
+testRestyler build push mWrite info = do
+    when build $ buildRestylerImage info
 
-                when (or results) $ do
-                    logError "Exiting due to Lint errors"
-                    exitFailure
+    image <- tagRestylerImage info
+    testRestylerImage info image
 
-            when oBuild $ for_ oInputs $ \yaml -> do
-                logDebug $ "Input: " <> fromString yaml
-                info <- Info.load yaml
-                buildRestylerImage info
+    when push $ do
+        exists <- doesRestylerImageExist image
+        if exists
+            then logWarn "Not pushing, image exists"
+            else pushRestylerImage image
 
-            when oTest $ do
-                restylers <- for oInputs $ \yaml -> do
-                    logDebug $ "Input: " <> fromString yaml
-                    info <- Info.load yaml
-                    image <- tagRestylerImage info
-                    testRestylerImage info image
-
-                    when oPush $ do
-                        exists <- doesRestylerImageExist image
-                        if exists
-                            then logWarn "Not pushing, image exists"
-                            else pushRestylerImage image
-
-                    pure $ toRestyler info image
-
-                traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
+    for_ mWrite $ \write ->
+        liftIO $ Manifest.write write $ pure $ toRestyler info image

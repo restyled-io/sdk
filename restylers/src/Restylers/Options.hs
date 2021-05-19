@@ -1,5 +1,6 @@
 module Restylers.Options
     ( Options(..)
+    , Command(..)
     , HasOptions(..)
     , parseOptions
     ) where
@@ -7,27 +8,27 @@ module Restylers.Options
 import RIO
 
 import Options.Applicative
-import RIO.NonEmpty (some1)
 import Restylers.Registry
 
 data Options = Options
     { oRegistry :: Maybe Registry
     , oSha :: Text
     , oDebug :: Bool
-    , oLint :: Bool
-    , oBuild :: Bool
-    , oTest :: Bool
-    , oPush :: Bool
-    , oWrite :: Maybe FilePath
-    , oInputs :: NonEmpty FilePath
+    , oCommand :: Command
+    , oInput :: FilePath
     }
+    deriving stock Show
+
+data Command
+    = Lint
+    | Test Bool Bool (Maybe FilePath)
     deriving stock Show
 
 class HasOptions env where
     optionsL :: Lens' env Options
 
 parseOptions :: IO Options
-parseOptions = execParser $ parse options "Process Restylers"
+parseOptions = execParser $ withInfo "Process Restylers" options
 
 -- brittany-disable-next-binding
 
@@ -50,36 +51,30 @@ options = Options
         <> long "debug"
         <> help "Log more verbosity"
         )
-    <*> switch
-        (  short 'l'
-        <> long "lint"
-        <> help "Lint Dockerfiles"
+    <*> subparser
+        (  command "lint" (withInfo "" (pure Lint))
+        <> command "test" (withInfo "" (Test
+            <$> switch
+                (  short 'b'
+                <> long "build"
+                <> help "Build before testing"
+                )
+            <*> switch
+                (  short 'p'
+                <> long "push"
+                <> help "Push version-tagged image"
+                )
+            <*> optional (strOption
+                (  short 'w'
+                <> long "write"
+                <> help "Output restyler definition to PATH"
+                <> metavar "PATH"
+                ))))
         )
-    <*> switch
-        (  short 'b'
-        <> long "build"
-        <> help "Build images"
-        )
-    <*> switch
-        (  short 'T'
-        <> long "test"
-        <> help "Test built images"
-        )
-    <*> switch
-        (  short 'p'
-        <> long "push"
-        <> help "Push built images"
-        )
-    <*> optional (strOption
-        (  short 'w'
-        <> long "write"
-        <> help "Output restylers.yaml to PATH"
-        <> metavar "PATH"
-        ))
-    <*> some1 (argument str
+    <*> argument str
         (  help "Path to Restyler info.yaml"
         <> metavar "PATH"
-        ))
+        )
 
-parse :: Parser a -> String -> ParserInfo a
-parse p d = info (p <**> helper) $ fullDesc <> progDesc d
+withInfo :: String -> Parser a -> ParserInfo a
+withInfo d p = info (p <**> helper) $ fullDesc <> progDesc d

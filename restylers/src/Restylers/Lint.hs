@@ -49,10 +49,10 @@ wiki code
 lintRestyler
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
     => RestylerInfo
-    -> m Bool
+    -> m ()
 lintRestyler info = do
     case Info.imageSource info of
-        Explicit{} -> False <$ logWarn "Not linting explicit image"
+        Explicit{} -> logWarn "Not linting explicit image"
         BuildVersionCmd _ _ options ->
             lintDockerfile $ Build.dockerfile options
         BuildVersion _ _ options -> lintDockerfile $ Build.dockerfile options
@@ -60,7 +60,7 @@ lintRestyler info = do
 lintDockerfile
     :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
     => FilePath
-    -> m Bool
+    -> m ()
 lintDockerfile dockerfile = do
     logInfo $ "Linting " <> fromString dockerfile
 
@@ -84,7 +84,8 @@ lintDockerfile dockerfile = do
 
     case eitherDecode bs of
         Left err -> throwString $ "Unable to read hadolint output: " <> err
-        Right [] -> pure False
+        Right [] -> pure ()
         Right (errors :: [LintError]) -> do
             logError $ "Lint errors found in " <> fromString dockerfile
-            True <$ traverse_ (logError . display) errors
+            traverse_ (logError . display) errors
+            exitFailure
