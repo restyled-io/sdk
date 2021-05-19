@@ -6,10 +6,10 @@ where
 import RIO
 
 import Data.Aeson
+import qualified RIO.ByteString.Lazy as BSL
 import Restylers.Image
 import Restylers.Name
 import Restylers.Registry
-import qualified RIO.ByteString.Lazy as BSL
 import Test.Hspec
 
 spec :: Spec

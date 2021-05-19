@@ -14,10 +14,10 @@ import RIO
 import Data.Aeson
 import Data.Algorithm.Diff (Diff, PolyDiff(..))
 import qualified Data.Algorithm.Diff as Diff
-import Restylers.Info.Test.Support (Support, writeSupportFile)
-import Restylers.Name
 import RIO.Text (unpack)
 import qualified RIO.Text as T
+import Restylers.Info.Test.Support (Support, writeSupportFile)
+import Restylers.Name
 
 data Test = Test
     { extension :: Maybe Text

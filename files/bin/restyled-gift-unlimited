@@ -58,5 +58,5 @@ printf 'Updating Account Id %s, for GitHub Login %s, to Discount Plan Id %s\n' \
   "$plan"
 
 { curl_ "/accounts/$account" -X PATCH -d @- | jq .; } <<EOM
-{ "marketplacePlan": $plan }
+{ "marketplacePlan": "$plan" }
 EOM

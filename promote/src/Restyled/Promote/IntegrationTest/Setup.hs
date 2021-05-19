@@ -9,14 +9,12 @@ where
 import RIO
 
 import Data.Aeson
-import Restyled.Promote.Channel
 import qualified Data.Yaml as Yaml
+import RIO.FilePath (takeDirectory, (<.>), (</>))
+import qualified RIO.Map as Map
 import RIO.Text (unpack)
 import qualified RIO.Text as T
-import RIO.FilePath (takeDirectory, (</>), (<.>))
-import qualified RIO.Map as Map
--- import RIO.Directory
---     (removeDirectoryRecursive, doesDirectoryExist, createDirectoryIfMissing)
+import Restyled.Promote.Channel
 import RIO.Directory (createDirectoryIfMissing)
 
 data Restyler = Restyler
