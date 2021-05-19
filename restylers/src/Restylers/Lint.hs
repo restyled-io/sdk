@@ -1,3 +1,4 @@
+-- Unused. Keeping just to avoid busting package.yaml docker cache :grimace:
 module Restylers.Lint
     ( lintRestyler
     ) where

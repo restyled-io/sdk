@@ -25,7 +25,9 @@ testOptions _ = Options
     { oRegistry = Nothing
     , oSha = "dev"
     , oDebug = False
-    , oCommand = undefined
+    , oBuild = False
+    , oPush = False
+    , oWrite = Nothing
     , oInput = undefined
     }
 

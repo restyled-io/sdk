@@ -1,6 +1,5 @@
 module Restylers.Options
     ( Options(..)
-    , Command(..)
     , HasOptions(..)
     , parseOptions
     ) where
@@ -14,21 +13,18 @@ data Options = Options
     { oRegistry :: Maybe Registry
     , oSha :: Text
     , oDebug :: Bool
-    , oCommand :: Command
+    , oBuild :: Bool
+    , oPush :: Bool
+    , oWrite :: Maybe FilePath
     , oInput :: FilePath
     }
-    deriving stock Show
-
-data Command
-    = Lint
-    | Test Bool Bool (Maybe FilePath)
     deriving stock Show
 
 class HasOptions env where
     optionsL :: Lens' env Options
 
 parseOptions :: IO Options
-parseOptions = execParser $ withInfo "Process Restylers" options
+parseOptions = execParser $ withInfo "Build, test, and push Restylers" options
 
 -- brittany-disable-next-binding
 
@@ -45,32 +41,29 @@ options = Options
         <> long "sha"
         <> help "Commit SHA to use as tag for input images"
         <> metavar "SHA"
+        <> value "dev"
         )
     <*> switch
         (  short 'd'
         <> long "debug"
         <> help "Log more verbosity"
         )
-    <*> subparser
-        (  command "lint" (withInfo "" (pure Lint))
-        <> command "test" (withInfo "" (Test
-            <$> switch
-                (  short 'b'
-                <> long "build"
-                <> help "Build before testing"
-                )
-            <*> switch
-                (  short 'p'
-                <> long "push"
-                <> help "Push version-tagged image"
-                )
-            <*> optional (strOption
-                (  short 'w'
-                <> long "write"
-                <> help "Output restyler definition to PATH"
-                <> metavar "PATH"
-                ))))
+    <*> (not <$> switch
+        (  short 'B'
+        <> long "no-build"
+        <> help "Skip build before testing"
+        ))
+    <*> switch
+        (  short 'p'
+        <> long "push"
+        <> help "Push version-tagged image"
         )
+    <*> optional (strOption
+        (  short 'w'
+        <> long "write"
+        <> help "Output restyler definition to PATH"
+        <> metavar "PATH"
+        ))
     <*> argument str
         (  help "Path to Restyler info.yaml"
         <> metavar "PATH"
