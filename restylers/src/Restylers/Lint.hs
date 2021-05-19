@@ -66,7 +66,7 @@ lintDockerfile dockerfile = do
 
     chd <- getCurrentHostDirectory
 
-    bs <- proc
+    (_, bs) <- proc
         "docker"
         (concat
             [ ["run", "--rm"]
@@ -78,7 +78,7 @@ lintDockerfile dockerfile = do
             , ["/Dockerfile"]
             ]
         )
-        readProcessStdout_
+        readProcessStdout
 
     logDebug $ "hadolint stdout: " <> displayShow bs
 
