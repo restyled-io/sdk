@@ -29,7 +29,7 @@ restyled <subcommand> [option...]
 
 ```yaml
 - name: Test
-  uses: restyled-io/sdk@pb/action
+  uses: restyled-io/sdk@main
   with:
     command: >-
       restylers
