@@ -12,4 +12,4 @@ runs:
   entrypoint: sh
   args:
     - -c
-    - 'REALPWD="$RUNNER_WORKSPACE/$(basename $GITHUB_REPOSITORY)" restyled ${{ inputs.command }}'
+    - 'echo $HOME; cat $HOME/.docker/config.json; REALPWD="$RUNNER_WORKSPACE/$(basename $GITHUB_REPOSITORY)" restyled ${{ inputs.command }}'
