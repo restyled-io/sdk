@@ -41,7 +41,6 @@ RUN \
   locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
 RUN gem install jwt
-RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
 
 COPY --from=builder /usr/bin/docker /bin/docker
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote

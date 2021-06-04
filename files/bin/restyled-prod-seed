@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ -z "${HEROKU_DATABASE_URL:-''}" ]]; then
+  cat >&2 <<'EOM'
+Error: HEROKU_DATABASE_URL not set. Run:
+
+  export HEROKU_DATABASE_URL=$(heroku config:get DATABASE_URL --app restyled.io)
+
+and try again.
+EOM
+
+  exit 1
+fi
+
 psql_() {
   psql --no-psqlrc --set=ON_ERROR_STOP=1 "$@"
 }
@@ -13,7 +25,7 @@ random_word() {
 }
 
 dev='postgres://postgres:password@localhost:5432/restyled'
-prod=$(restyled heroku config:get DATABASE_URL)
+prod=$HEROKU_DATABASE_URL
 interval='14 DAYS'
 sql_repo_columns='svcs, owner, name, installation_id, is_private, debug_enabled, enabled, restyler_image'
 sql_job_columns='svcs, owner, repo, pull_request, created_at, updated_at, completed_at, exit_code, log, stdout, stderr'
