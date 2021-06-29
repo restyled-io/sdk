@@ -22,21 +22,22 @@ main = do
         app <- loadApp opts lf
         runRIO app $ do
             logDebug $ "Options: " <> displayShow opts
-            yaml <- locateYaml oInput
-            info <- Info.load yaml
+            restylers <- for oInput $ \path -> do
+                yaml <- locateYaml path
+                info <- Info.load yaml
 
-            when oBuild $ buildRestylerImage info
+                when oBuild $ buildRestylerImage info
 
-            image <- tagRestylerImage info
-            testRestylerImage info image
+                image <- tagRestylerImage info
+                testRestylerImage info image
 
-            when oPush $ do
-                exists <- doesRestylerImageExist image
-                if exists
-                    then logWarn "Not pushing, image exists"
-                    else pushRestylerImage image
+                when oPush $ do
+                    exists <- doesRestylerImageExist image
+                    if exists
+                        then logWarn "Not pushing, image exists"
+                        else pushRestylerImage image
 
-            let restylers = pure $ toRestyler info image
+                pure $ toRestyler info image
             traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
 
 locateYaml

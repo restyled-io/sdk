@@ -7,6 +7,7 @@ module Restylers.Options
 import RIO
 
 import Options.Applicative
+import RIO.NonEmpty (some1)
 import Restylers.Registry
 
 data Options = Options
@@ -16,7 +17,7 @@ data Options = Options
     , oBuild :: Bool
     , oPush :: Bool
     , oWrite :: Maybe FilePath
-    , oInput :: FilePath
+    , oInput :: NonEmpty FilePath
     }
     deriving stock Show
 
@@ -64,10 +65,10 @@ options = Options
         <> help "Output restyler definition to PATH"
         <> metavar "PATH"
         ))
-    <*> argument str
+    <*> some1 (argument str
         (  help "Path to Restyler info.yaml"
         <> metavar "PATH"
-        )
+        ))
 
 withInfo :: String -> Parser a -> ParserInfo a
 withInfo d p = info (p <**> helper) $ fullDesc <> progDesc d
