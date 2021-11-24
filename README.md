@@ -10,6 +10,8 @@ mkdir -p ~/.local/bin
 curl -sL -o ~/.local/bin/restyled \
   https://raw.githubusercontent.com/restyled-io/sdk/main/restyled
 
+chmod +x ~/.local/bin/restyled
+
 export PATH=$HOME/.local/bin:$PATH
 ```
 
