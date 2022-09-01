@@ -13,6 +13,7 @@ import Restylers.Manifest (toRestyler)
 import qualified Restylers.Manifest as Manifest
 import Restylers.Options
 import Restylers.Test
+import Restylers.UpdateCheck
 
 main :: IO ()
 main = do
@@ -30,6 +31,8 @@ main = do
 
                 image <- tagRestylerImage info
                 testRestylerImage info image
+
+                when oCheckForUpdate $ checkForUpdate info image
 
                 when oPush $ do
                     exists <- doesRestylerImageExist image

@@ -65,7 +65,6 @@ runRestyler code info image tests = do
     for_ tests $ \(number, test) -> do
         writeTestFiles number (Info.name info) test
 
-
     if Info.supports_multiple_paths info
         then dockerRun relativePaths
         else traverse_ (dockerRun . pure) relativePaths

@@ -3,8 +3,7 @@
 
 module Restyled.Promote.IntegrationTest.Setup
     ( setupManifestTestFiles
-    )
-where
+    ) where
 
 import RIO
 

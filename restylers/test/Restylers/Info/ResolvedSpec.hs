@@ -28,6 +28,7 @@ testOptions _ = Options
     , oBuild = False
     , oPush = False
     , oWrite = Nothing
+    , oCheckForUpdate = False
     , oInput = undefined
     }
 

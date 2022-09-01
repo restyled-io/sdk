@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e74bb232037b3e70417f556b6388f8395fc6654bb51c7667a678ab27a5f98a79
+-- hash: c5f1e7fca2f2ccf961a419ec464ea6df8c47cd13fc5418a70bd405e778dc7b4e
 
 name:           restylers
 version:        0.0.0.0
@@ -30,6 +30,7 @@ library
       Restylers.Override
       Restylers.Registry
       Restylers.Test
+      Restylers.UpdateCheck
       Restylers.Version
   other-modules:
       Paths_restylers
@@ -65,6 +66,10 @@ library
       Diff
     , aeson
     , base
+    , http-conduit
+    , http-types
+    , lens
+    , lens-aeson
     , mtl
     , optparse-applicative
     , rio

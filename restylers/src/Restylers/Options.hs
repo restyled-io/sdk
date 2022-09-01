@@ -17,6 +17,7 @@ data Options = Options
     , oBuild :: Bool
     , oPush :: Bool
     , oWrite :: Maybe FilePath
+    , oCheckForUpdate :: Bool
     , oInput :: NonEmpty FilePath
     }
     deriving stock Show
@@ -65,6 +66,10 @@ options = Options
         <> help "Output restyler definition to PATH"
         <> metavar "PATH"
         ))
+    <*> switch
+        (  long "check-for-update"
+        <> help "Check for updates if possible, fail if available"
+        )
     <*> some1 (argument str
         (  help "Path to Restyler info.yaml"
         <> metavar "PATH"

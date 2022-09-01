@@ -42,6 +42,10 @@ library:
   dependencies:
     - Diff
     - aeson
+    - http-conduit
+    - http-types
+    - lens
+    - lens-aeson
     - mtl
     - optparse-applicative
     - rio
