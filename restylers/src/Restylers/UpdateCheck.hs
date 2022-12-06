@@ -95,6 +95,16 @@ getRemoteVersion info = do
                         . _String
                         . to (RestylerVersion . T.dropPrefix "refs/tags/")
 
-            pure $ headMaybe $ sortOn Down $ mapMaybe toDataVersion rvs
+            pure
+                $ headMaybe
+                $ sortOn Down
+                $ filter (not . isPrerelease)
+                $ mapMaybe toDataVersion rvs
 
     pure $ join mResult
+
+isPrerelease :: Version -> Bool
+isPrerelease Version {..} = any (`elem` versionTags) prereleaseTags
+
+prereleaseTags :: [String]
+prereleaseTags = ["alpha", "beta", "prerelease", "rc"]
