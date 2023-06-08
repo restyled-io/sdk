@@ -1,6 +1,6 @@
 module Restylers.Name
-    ( RestylerName(..)
-    )
+  ( RestylerName (..)
+  )
 where
 
 import RIO
@@ -8,6 +8,6 @@ import RIO
 import Data.Aeson
 
 newtype RestylerName = RestylerName
-    { unRestylerName :: Text
-    }
-    deriving newtype (Eq, Hashable, Ord, Show, Display, FromJSON, ToJSON)
+  { unRestylerName :: Text
+  }
+  deriving newtype (Eq, Hashable, Ord, Show, Display, FromJSON, ToJSON)

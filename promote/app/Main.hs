@@ -1,6 +1,6 @@
 module Main
-    ( main
-    )
+  ( main
+  )
 where
 
 import RIO
@@ -11,14 +11,14 @@ import Restyled.Promote.Options
 
 main :: IO ()
 main = do
-    Options {..} <- parseOptions
+  Options {..} <- parseOptions
 
-    runSimpleApp $ do
-        traverse_ (`uploadManifest` oFromChannel) oFromPath
+  runSimpleApp $ do
+    traverse_ (`uploadManifest` oFromChannel) oFromPath
 
-        unless oSkipIntegrationTest
-            $ runIntegrationTest oFromChannel oIntegrationTestOptions
+    unless oSkipIntegrationTest $
+      runIntegrationTest oFromChannel oIntegrationTestOptions
 
-        for_ oToChannel $ \channel -> do
-            diffManifests oFromChannel channel
-            when oProceed $ copyManifest oFromChannel channel
+    for_ oToChannel $ \channel -> do
+      diffManifests oFromChannel channel
+      when oProceed $ copyManifest oFromChannel channel

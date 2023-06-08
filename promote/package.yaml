@@ -29,10 +29,11 @@ default-extensions:
   - TypeFamilies
 
 ghc-options: -Weverything
-  -Wno-unsafe
   -Wno-missing-import-lists
+  -Wno-missing-kind-signatures
   -Wno-missing-safe-haskell-mode
   -Wno-prepositive-qualified-module
+  -Wno-unsafe
 
 dependencies:
   - base

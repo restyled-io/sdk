@@ -1,13 +1,13 @@
 {-# LANGUAGE DerivingVia #-}
 
 module Restylers.Info
-    ( RestylerInfo(..)
-    ) where
+  ( RestylerInfo (..)
+  ) where
 
 import RIO
 
 import Data.Aeson
-import Data.Semigroup (Last(..))
+import Data.Semigroup (Last (..))
 import Data.Semigroup.Generic
 import Restylers.Image
 import Restylers.Info.Build (RestylerBuild)
@@ -16,21 +16,21 @@ import Restylers.Name
 import Restylers.Version
 
 data RestylerInfo = RestylerInfo
-    { enabled :: Maybe (Last Bool)
-    , name :: Last RestylerName
-    , version :: Maybe (Last RestylerVersion)
-    , version_cmd :: Maybe (Last String)
-    , image :: Maybe (Last RestylerImage)
-    , build :: Maybe (Last RestylerBuild)
-    , command :: Maybe (Last [Text])
-    , arguments :: Maybe (Last [Text])
-    , include :: Maybe (Last [Text])
-    , interpreters :: Maybe (Last [Text])
-    , supports_arg_sep :: Maybe (Last Bool)
-    , supports_multiple_paths :: Maybe (Last Bool)
-    , documentation :: Maybe (Last [Text])
-    , metadata :: Maybe (Last Metadata)
-    }
-    deriving stock Generic
-    deriving anyclass FromJSON
-    deriving Semigroup via (GenericSemigroupMonoid RestylerInfo)
+  { enabled :: Maybe (Last Bool)
+  , name :: Last RestylerName
+  , version :: Maybe (Last RestylerVersion)
+  , version_cmd :: Maybe (Last String)
+  , image :: Maybe (Last RestylerImage)
+  , build :: Maybe (Last RestylerBuild)
+  , command :: Maybe (Last [Text])
+  , arguments :: Maybe (Last [Text])
+  , include :: Maybe (Last [Text])
+  , interpreters :: Maybe (Last [Text])
+  , supports_arg_sep :: Maybe (Last Bool)
+  , supports_multiple_paths :: Maybe (Last Bool)
+  , documentation :: Maybe (Last [Text])
+  , metadata :: Maybe (Last Metadata)
+  }
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
+  deriving (Semigroup) via (GenericSemigroupMonoid RestylerInfo)

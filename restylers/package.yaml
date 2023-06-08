@@ -32,10 +32,11 @@ default-extensions:
   - TypeFamilies
 
 ghc-options: -Weverything
-  -Wno-unsafe
   -Wno-missing-import-lists
+  -Wno-missing-kind-signatures
   -Wno-missing-safe-haskell-mode
   -Wno-prepositive-qualified-module
+  -Wno-unsafe
 
 library:
   source-dirs: src
@@ -46,7 +47,6 @@ library:
     - http-types
     - lens
     - lens-aeson
-    - mtl
     - optparse-applicative
     - rio
     - semigroups

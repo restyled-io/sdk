@@ -1,6 +1,6 @@
 module Main
-    ( main
-    ) where
+  ( main
+  ) where
 
 import RIO
 
@@ -17,45 +17,45 @@ import Restylers.UpdateCheck
 
 main :: IO ()
 main = do
-    opts@Options {..} <- parseOptions
-    logOptions <- logOptionsHandle stdout oDebug
-    withLogFunc logOptions $ \lf -> do
-        app <- loadApp opts lf
-        runRIO app $ do
-            logDebug $ "Options: " <> displayShow opts
-            restylers <- for oInput $ \path -> do
-                yaml <- locateYaml path
-                info <- Info.load yaml
+  opts@Options {..} <- parseOptions
+  logOptions <- logOptionsHandle stdout oDebug
+  withLogFunc logOptions $ \lf -> do
+    app <- loadApp opts lf
+    runRIO app $ do
+      logDebug $ "Options: " <> displayShow opts
+      restylers <- for oInput $ \path -> do
+        yaml <- locateYaml path
+        info <- Info.load yaml
 
-                when oBuild $ buildRestylerImage info
+        when oBuild $ buildRestylerImage info
 
-                image <- tagRestylerImage info
-                testRestylerImage info image
+        image <- tagRestylerImage info
+        testRestylerImage info image
 
-                when oCheckForUpdate $ checkForUpdate info image
+        when oCheckForUpdate $ checkForUpdate info image
 
-                when oPush $ do
-                    exists <- doesRestylerImageExist image
-                    if exists
-                        then logWarn "Not pushing, image exists"
-                        else pushRestylerImage image
+        when oPush $ do
+          exists <- doesRestylerImageExist image
+          if exists
+            then logWarn "Not pushing, image exists"
+            else pushRestylerImage image
 
-                pure $ toRestyler info image
-            traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
+        pure $ toRestyler info image
+      traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
 
 locateYaml
-    :: (MonadIO m, MonadReader env m, HasLogFunc env) => FilePath -> m FilePath
+  :: (MonadIO m, MonadReader env m, HasLogFunc env) => FilePath -> m FilePath
 locateYaml input
-    | takeExtension input `elem` [".yml", ".yaml"] = pure input
-    | otherwise = do
-        let input' = input </> "info" <.> "yaml"
-        exists <- doesFileExist input'
-        input' <$ unless exists err
-  where
-    err :: (MonadIO m, MonadReader env m, HasLogFunc env) => m ()
-    err = do
-        logError
-            $ "Invalid PATH input ("
-            <> fromString input
-            <> "). Must be .yml, .yaml, or a directory containing an info.yaml"
-        exitFailure
+  | takeExtension input `elem` [".yml", ".yaml"] = pure input
+  | otherwise = do
+      let input' = input </> "info" <.> "yaml"
+      exists <- doesFileExist input'
+      input' <$ unless exists err
+ where
+  err :: (MonadIO m, MonadReader env m, HasLogFunc env) => m ()
+  err = do
+    logError $
+      "Invalid PATH input ("
+        <> fromString input
+        <> "). Must be .yml, .yaml, or a directory containing an info.yaml"
+    exitFailure

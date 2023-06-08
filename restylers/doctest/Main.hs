@@ -1,6 +1,6 @@
 module Main
-    ( main
-    )
+  ( main
+  )
 where
 
 import Prelude
@@ -8,7 +8,8 @@ import Prelude
 import Test.DocTest
 
 main :: IO ()
-main = doctest
+main =
+  doctest
     [ "-XBangPatterns"
     , "-XDataKinds"
     , "-XDeriveAnyClass"
