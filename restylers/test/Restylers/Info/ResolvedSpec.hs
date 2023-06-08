@@ -31,6 +31,7 @@ testOptions _ =
     , oWrite = Nothing
     , oCheckForUpdate = False
     , oInput = undefined
+    , oHspecArgs = Nothing
     }
 
 spec :: Spec

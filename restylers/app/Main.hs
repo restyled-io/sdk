@@ -30,7 +30,7 @@ main = do
         when oBuild $ buildRestylerImage info
 
         image <- tagRestylerImage info
-        testRestylerImage info image
+        testRestylerImage info image $ fromMaybe [] oHspecArgs
 
         when oCheckForUpdate $ checkForUpdate info image
 

@@ -9,6 +9,7 @@ import RIO
 import Options.Applicative
 import RIO.NonEmpty (some1)
 import Restylers.Registry
+import qualified ShellWords
 
 data Options = Options
   { oRegistry :: Maybe Registry
@@ -19,6 +20,7 @@ data Options = Options
   , oWrite :: Maybe FilePath
   , oCheckForUpdate :: Bool
   , oInput :: NonEmpty FilePath
+  , oHspecArgs :: Maybe [String]
   }
   deriving stock (Show)
 
@@ -83,6 +85,13 @@ options =
           str
           ( help "Path to Restyler info.yaml"
               <> metavar "PATH"
+          )
+      )
+    <*> optional
+      ( option
+          (eitherReader ShellWords.parse)
+          ( long "hspec-arguments"
+              <> help "Arguments for generated hspec test suite"
           )
       )
 

@@ -20,7 +20,8 @@ import Restylers.Info.Test.Support (Support, writeSupportFile)
 import Restylers.Name
 
 data Test = Test
-  { extension :: Maybe Text
+  { name :: Maybe Text
+  , extension :: Maybe Text
   , contents :: Text
   , restyled :: Text
   , support :: Maybe Support

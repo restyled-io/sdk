@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0862c60ecff7d4e98f632ce75fd130d8ae2b18d27286d417199137ee0aa98a74
+-- hash: fc637117fed917c8f166c35e7fec3aa9737dc416650dc20f884860fb360e772a
 
 name:           restylers
 version:        0.0.0.0
@@ -66,6 +66,7 @@ library
       Diff
     , aeson
     , base
+    , hspec
     , http-conduit
     , http-types
     , lens
@@ -73,6 +74,7 @@ library
     , optparse-applicative
     , rio
     , semigroups
+    , shellwords
     , yaml
   default-language: Haskell2010
 
