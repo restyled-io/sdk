@@ -6,7 +6,7 @@ module Restylers.Test
 
 import RIO
 
--- import qualified RIO.ByteString.Lazy as LBS
+import qualified RIO.ByteString.Lazy as BSL
 import RIO.FilePath (takeBaseName, (</>))
 import RIO.List (nub)
 import RIO.Process
@@ -111,7 +111,7 @@ runRestyler
   -> [(Int, Test)]
   -> m ()
 runRestyler code info image tests = do
-  void $
+  (out, err) <-
     proc
       "docker"
       ( nub $
@@ -127,6 +127,8 @@ runRestyler code info image tests = do
             ]
       )
       readProcess_
+  logDebug $ "stdout: " <> displayBytesUtf8 (BSL.toStrict out)
+  logDebug $ "stderr: " <> displayBytesUtf8 (BSL.toStrict err)
  where
   -- Restyler prepends ./, so we do too
   relativePath number test = "./" <> testFilePath number (Info.name info) test
