@@ -32,6 +32,7 @@ data RestylerInfo = RestylerInfo
   , interpreters :: [Text]
   , supports_arg_sep :: Bool
   , supports_multiple_paths :: Bool
+  , run_as_filter :: Bool
   , documentation :: [Text]
   , metadata :: Metadata
   , imageSource :: ImageSource
@@ -96,6 +97,9 @@ fromInfo info imageSource =
     , supports_multiple_paths =
         fromMaybeLast True $
           Info.supports_multiple_paths info
+    , run_as_filter =
+        fromMaybeLast False $
+          Info.run_as_filter info
     , documentation = fromMaybeLast [] $ Info.documentation info
     , metadata = fromMaybeLast Metadata.emptyMetadata $ Info.metadata info
     , imageSource
@@ -104,7 +108,7 @@ fromInfo info imageSource =
   name = getLast $ Info.name info
 
 overrideToInfo :: Override.RestylerOverride -> Info.RestylerInfo
-overrideToInfo Override.RestylerOverride {enabled, name, command, arguments, include, interpreters, supports_arg_sep, supports_multiple_paths, documentation, metadata} =
+overrideToInfo Override.RestylerOverride {enabled, name, command, arguments, include, interpreters, supports_arg_sep, supports_multiple_paths, run_as_filter, documentation, metadata} =
   Info.RestylerInfo
     { enabled
     , name
@@ -118,6 +122,7 @@ overrideToInfo Override.RestylerOverride {enabled, name, command, arguments, inc
     , interpreters
     , supports_arg_sep
     , supports_multiple_paths
+    , run_as_filter
     , documentation
     , metadata
     }

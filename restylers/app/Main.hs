@@ -26,21 +26,19 @@ main = do
       restylers <- for oInput $ \path -> do
         yaml <- locateYaml path
         info <- Info.load yaml
-
         when oBuild $ buildRestylerImage info
-
         image <- tagRestylerImage info
-        testRestylerImage info image $ fromMaybe [] oHspecArgs
-
         when oCheckForUpdate $ checkForUpdate info image
-
-        when oPush $ do
-          exists <- doesRestylerImageExist image
-          if exists
-            then logWarn "Not pushing, image exists"
-            else pushRestylerImage image
-
         pure $ toRestyler info image
+
+      testRestylers restylers $ fromMaybe [] oHspecArgs
+
+      when oPush $ for_ restylers $ \restyler -> do
+        exists <- doesRestylerImageExist $ Manifest.image restyler
+        if exists
+          then logWarn "Not pushing, image exists"
+          else pushRestylerImage $ Manifest.image restyler
+
       traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
 
 locateYaml

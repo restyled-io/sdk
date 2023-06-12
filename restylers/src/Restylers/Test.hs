@@ -1,103 +1,79 @@
-{-# LANGUAGE DerivingVia #-}
-
 module Restylers.Test
-  ( testRestylerImage
+  ( testRestylers
   ) where
 
 import RIO
 
+import Data.Aeson (ToJSON, object, (.=))
+import qualified Data.Yaml as Yaml
 import qualified RIO.ByteString.Lazy as BSL
-import RIO.FilePath (takeBaseName, (</>))
-import RIO.List (nub)
 import RIO.Process
-import RIO.Text (pack, unpack)
+import RIO.Text (unpack)
 import Restylers.Directory
-import Restylers.Image
 import qualified Restylers.Info.Metadata as Metadata
-import Restylers.Info.Resolved (RestylerInfo)
-import qualified Restylers.Info.Resolved as Info
 import Restylers.Info.Test
-  ( Test
+  ( testDescription
   , testFilePath
   , writeTestFiles
   )
 import qualified Restylers.Info.Test as Test
+import qualified Restylers.Manifest as Manifest
 import Restylers.Name (RestylerName (..))
 import System.Environment (withArgs)
 import Test.Hspec
 
-testRestylerImage
+testRestylers
   :: ( MonadUnliftIO m
      , MonadReader env m
      , HasLogFunc env
      , HasProcessContext env
      )
-  => RestylerInfo
-  -> RestylerImage
+  => NonEmpty Manifest.Restyler
   -> [String]
   -> m ()
-testRestylerImage info image hspecArgs = do
-  chd <- getCurrentHostDirectory
-  cwd <- getCurrentDirectory
-
-  withTempDirectory cwd "restylers-test" $ \tmp ->
+testRestylers restylers hspecArgs = do
+  withSystemTempDirectory "restylers-test" $ \tmp ->
     withCurrentDirectory tmp $ do
-      for_ tests $ \(number, test) -> do
-        writeTestFiles number (Info.name info) test
+      for_ restylers $ \restyler -> do
+        for_ (restylerTests restyler) $ \(number, test) -> do
+          writeTestFiles
+            number
+            (Manifest.name restyler)
+            (Manifest.include restyler)
+            test
 
-      let code = chd </> takeBaseName tmp
+      writeYaml testManifest restylers
+      writeYaml ".restyled.yaml" $
+        object
+          [ "restylers_version" .= ("testing" :: Text)
+          , "restylers" .= (Manifest.name <$> restylers)
+          ]
 
-      withRunInIO $ \runInIO -> do
+      delayedException <-
+        tryAny $ do
+          (out, err) <- runRestyler
+          logDebug $ "stdout: " <> displayBytesUtf8 (BSL.toStrict out)
+          logDebug $ "stderr: " <> displayBytesUtf8 (BSL.toStrict err)
+
+      liftIO $ do
         withArgs hspecArgs $ hspec $ do
-          describe (unpack $ unRestylerName $ Info.name info) $ do
-            if Info.supports_multiple_paths info
-              then dockerRunSpec runInIO code info image tests
-              else traverse_ (dockerRunSpec runInIO code info image . pure) tests
- where
-  tests = zip [1 ..] $ Metadata.tests $ Info.metadata info
+          for_ restylers $ \restyler -> do
+            describe (unpack $ unRestylerName $ Manifest.name restyler) $ do
+              for_ (restylerTests restyler) $ \(number, test) -> do
+                it (testDescription number test) $ do
+                  -- If docker-run failed, re-throw it here so it's handled
+                  void $ either throwIO pure delayedException
+                  restyled <-
+                    readFileUtf8 $
+                      testFilePath
+                        number
+                        (Manifest.name restyler)
+                        (Manifest.include restyler)
+                        test
+                  restyled `shouldBe` Test.restyled test
 
-dockerRunSpec
-  :: ( MonadUnliftIO m
-     , MonadReader env m
-     , HasLogFunc env
-     , HasProcessContext env
-     )
-  => (forall a. m a -> IO a)
-  -> FilePath
-  -> RestylerInfo
-  -> RestylerImage
-  -> [(Int, Test)]
-  -> Spec
-dockerRunSpec runInIO code info image tests = do
-  context testContext $ do
-    delayedException <-
-      runIO $
-        runInIO $
-          tryAny $
-            runRestyler code info image tests
-
-    for_ tests $ \(number, test) -> do
-      it (testDescription number test) $ do
-        -- If docker-run failed, re-throw it here so it's handled
-        void $ either throwIO pure delayedException
-        readFileUtf8 (testFilePath number (Info.name info) test)
-          `shouldReturn` Test.restyled test
- where
-  testContext :: String
-  testContext =
-    "docker run "
-      <> unpack (unRestylerImage image)
-      <> " {"
-      <> case length tests of
-        1 -> "1 path"
-        n -> show n <> " paths"
-      <> "}"
-
-  testDescription :: Int -> Test -> String
-  testDescription number test =
-    unpack $
-      fromMaybe ("Test #" <> pack (show number)) $
-        Test.name test
+restylerTests :: Manifest.Restyler -> [(Int, Test.Test)]
+restylerTests = zip [1 ..] . Metadata.tests . Manifest.metadata
 
 runRestyler
   :: ( MonadIO m
@@ -105,30 +81,31 @@ runRestyler
      , HasLogFunc env
      , HasProcessContext env
      )
-  => FilePath
-  -> RestylerInfo
-  -> RestylerImage
-  -> [(Int, Test)]
-  -> m ()
-runRestyler code info image tests = do
-  (out, err) <-
-    proc
-      "docker"
-      ( nub $
-          concat
-            [ ["run", "--interactive", "--rm"]
-            , ["--net", "none"]
-            , ["--volume", code <> ":/code"]
-            , [unpack $ unRestylerImage image]
-            , map unpack $ Info.command info
-            , map unpack $ Info.arguments info
-            , ["--" | Info.supports_arg_sep info]
-            , map (uncurry relativePath) tests
-            ]
-      )
-      readProcess_
-  logDebug $ "stdout: " <> displayBytesUtf8 (BSL.toStrict out)
-  logDebug $ "stderr: " <> displayBytesUtf8 (BSL.toStrict err)
- where
-  -- Restyler prepends ./, so we do too
-  relativePath number test = "./" <> testFilePath number (Info.name info) test
+  => m (BSL.ByteString, BSL.ByteString)
+runRestyler = do
+  cwd <- getCurrentDirectory
+  proc
+    "docker"
+    ( concat
+        [ ["run", "--rm"]
+        , ["--env", "LOG_LEVEL=debug"]
+        , ["--env", "LOG_COLOR=always"]
+        , ["--env", "MANIFEST=" <> testManifest]
+        , ["--env", "RESTYLER_NO_CAP_DROP_ALL=x"]
+        , ["--volume", "/tmp:/tmp"]
+        , ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
+        , ["--entrypoint", "restyle-path"]
+        , ["--workdir", cwd]
+        , ["restyled/restyler:edge", "."]
+        ]
+    )
+    readProcess_
+
+writeYaml :: (MonadIO m, ToJSON a) => FilePath -> a -> m ()
+writeYaml path =
+  writeFileUtf8 path
+    . decodeUtf8With lenientDecode
+    . Yaml.encode
+
+testManifest :: FilePath
+testManifest = "/tmp/restylers-testing.yaml"

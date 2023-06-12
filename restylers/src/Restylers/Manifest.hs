@@ -26,6 +26,7 @@ data Restyler = Restyler
   , interpreters :: [Text]
   , supports_arg_sep :: Bool
   , supports_multiple_paths :: Bool
+  , run_as_filter :: Bool
   , documentation :: [Text]
   , metadata :: Metadata
   }
@@ -33,7 +34,7 @@ data Restyler = Restyler
   deriving anyclass (ToJSON)
 
 toRestyler :: Info.RestylerInfo -> RestylerImage -> Restyler
-toRestyler Info.RestylerInfo {enabled, name, command, arguments, include, interpreters, supports_arg_sep, supports_multiple_paths, documentation, metadata} image =
+toRestyler Info.RestylerInfo {enabled, name, command, arguments, include, interpreters, supports_arg_sep, supports_multiple_paths, run_as_filter, documentation, metadata} image =
   Restyler
     { enabled
     , name
@@ -44,6 +45,7 @@ toRestyler Info.RestylerInfo {enabled, name, command, arguments, include, interp
     , interpreters
     , supports_arg_sep
     , supports_multiple_paths
+    , run_as_filter
     , documentation
     , metadata
     }

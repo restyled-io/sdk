@@ -3,21 +3,20 @@
 module Restylers.Info.Test
   ( Test (..)
   , writeTestFiles
-  , ExpectationFailure (..)
-  , assertTestRestyled
   , testFilePath
+  , testDescription
   )
 where
 
 import RIO
 
 import Data.Aeson
-import Data.Algorithm.Diff (Diff, PolyDiff (..))
-import qualified Data.Algorithm.Diff as Diff
-import RIO.Text (unpack)
+import RIO.List (headMaybe)
+import RIO.Text (pack, unpack)
 import qualified RIO.Text as T
 import Restylers.Info.Test.Support (Support, writeSupportFile)
 import Restylers.Name
+import System.FilePath (takeExtension)
 
 data Test = Test
   { name :: Maybe Text
@@ -29,53 +28,28 @@ data Test = Test
   deriving stock (Eq, Show, Generic)
   deriving anyclass (FromJSON, ToJSON)
 
-writeTestFiles :: MonadIO m => Int -> RestylerName -> Test -> m ()
-writeTestFiles number name test@Test {contents, support} = do
-  writeFileUtf8 (testFilePath number name test) contents
+writeTestFiles :: MonadIO m => Int -> RestylerName -> [Text] -> Test -> m ()
+writeTestFiles number name include test@Test {contents, support} = do
+  writeFileUtf8 (testFilePath number name include test) contents
   traverse_ writeSupportFile support
 
-data ExpectationFailure = ExpectationFailure
-  { efName :: RestylerName
-  , efTest :: Test
-  , efActual :: Text
-  }
-  deriving stock (Show)
-  deriving anyclass (Exception)
+testFilePath :: Int -> RestylerName -> [Text] -> Test -> FilePath
+testFilePath number name include Test {extension} =
+  unpack (unRestylerName name)
+    <> "-test-"
+    <> show number
+    <> maybe (guessExtension include) (("." <>) . unpack) extension
 
-instance Display ExpectationFailure where
-  display ExpectationFailure {..} =
-    "Test case failed for "
-      <> display efName
-      <> ":\n"
-      <> display (renderDiff (restyled efTest) efActual)
-      <> "\n"
+guessExtension :: [Text] -> String
+guessExtension =
+  maybe ".tmp" (takeExtension . unpack)
+    . headMaybe
+    . filter ("." `T.isInfixOf`)
+    . filter (not . ("!" `T.isPrefixOf`))
 
-renderDiff :: Text -> Text -> Text
-renderDiff a b =
-  T.unlines $ map renderDiffLine $ Diff.getDiff (T.lines a) (T.lines b)
-
-renderDiffLine :: Diff Text -> Text
-renderDiffLine = \case
-  First removed -> "- " <> removed
-  Second added -> "+ " <> added
-  Both same _ -> "  " <> same
-
-assertTestRestyled :: MonadIO m => Int -> RestylerName -> Test -> m ()
-assertTestRestyled number name test@Test {restyled} = do
-  actual <- readFileUtf8 $ testFilePath number name test
-  when (actual /= restyled) $
-    throwIO $
-      ExpectationFailure
-        { efName = name
-        , efTest = test
-        , efActual = actual
-        }
-
-testFilePath :: Int -> RestylerName -> Test -> FilePath
-testFilePath number name Test {extension} =
+testDescription :: Int -> Test -> String
+testDescription number Test {name} =
   unpack $
-    unRestylerName name
-      <> "-test-"
-      <> tshow number
-      <> "."
-      <> fromMaybe "tmp" extension
+    fromMaybe
+      ("Test #" <> pack (show number))
+      name

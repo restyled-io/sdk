@@ -41,8 +41,8 @@ ghc-options: -Weverything
 library:
   source-dirs: src
   dependencies:
-    - Diff
     - aeson
+    - filepath
     - hspec
     - http-conduit
     - http-types

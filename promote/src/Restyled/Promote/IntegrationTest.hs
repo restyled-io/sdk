@@ -93,14 +93,15 @@ runIntegrationTest channel IntegrationTestOptions {..} = do
   proc
     "docker"
     ( concat
-        [ ["run", "--interactive", "--rm"]
-        , if oitDebug then ["--env", "DEBUG=1"] else []
+        [ ["run", "--rm"]
+        , ["--env", "LOG_COLOR=always"]
+        , if oitDebug then ["--env", "LOG_LEVEL=debug"] else []
         , ["--env", "GITHUB_ACCESS_TOKEN=" <> unpack token]
         , ["--volume", "/tmp:/tmp"]
         , ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
         , [unpack oitRestylerImage]
         , ["--job-url", "https://example.com"]
-        , ["--color=always", unpack pr]
+        , [unpack pr]
         ]
     )
     runProcess_

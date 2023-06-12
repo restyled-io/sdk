@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fc637117fed917c8f166c35e7fec3aa9737dc416650dc20f884860fb360e772a
+-- hash: b9019817a54b1fb6490019ac3f26a948cef37aa7d210d3ac7388048c89d0703d
 
 name:           restylers
 version:        0.0.0.0
@@ -63,9 +63,9 @@ library
       TypeFamilies
   ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
   build-depends:
-      Diff
-    , aeson
+      aeson
     , base
+    , filepath
     , hspec
     , http-conduit
     , http-types

@@ -28,6 +28,7 @@ data RestylerInfo = RestylerInfo
   , interpreters :: Maybe (Last [Text])
   , supports_arg_sep :: Maybe (Last Bool)
   , supports_multiple_paths :: Maybe (Last Bool)
+  , run_as_filter :: Maybe (Last Bool)
   , documentation :: Maybe (Last [Text])
   , metadata :: Maybe (Last Metadata)
   }
