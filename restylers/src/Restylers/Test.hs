@@ -7,6 +7,7 @@ import RIO
 import Data.Aeson (ToJSON, object, (.=))
 import qualified Data.Yaml as Yaml
 import qualified RIO.ByteString.Lazy as BSL
+import RIO.FilePath (takeBaseName, (</>))
 import RIO.Process
 import RIO.Text (unpack)
 import Restylers.Directory
@@ -32,7 +33,10 @@ testRestylers
   -> [String]
   -> m ()
 testRestylers restylers hspecArgs = do
-  withSystemTempDirectory "restylers-test" $ \tmp ->
+  cwd <- getCurrentDirectory
+  chd <- getCurrentHostDirectory
+
+  withTempDirectory cwd "restylers-test" $ \tmp ->
     withCurrentDirectory tmp $ do
       for_ restylers $ \restyler -> do
         for_ (restylerTests restyler) $ \(number, test) -> do
@@ -49,9 +53,11 @@ testRestylers restylers hspecArgs = do
           , "restylers" .= (Manifest.name <$> restylers)
           ]
 
+      let code = chd </> takeBaseName tmp
+
       delayedException <-
         tryAny $ do
-          (out, err) <- runRestyler
+          (out, err) <- runRestyler code
           logDebug $ "stdout: " <> displayBytesUtf8 (BSL.toStrict out)
           logDebug $ "stderr: " <> displayBytesUtf8 (BSL.toStrict err)
 
@@ -81,21 +87,22 @@ runRestyler
      , HasLogFunc env
      , HasProcessContext env
      )
-  => m (BSL.ByteString, BSL.ByteString)
-runRestyler = do
-  cwd <- getCurrentDirectory
+  => FilePath
+  -> m (BSL.ByteString, BSL.ByteString)
+runRestyler code = do
   proc
     "docker"
     ( concat
         [ ["run", "--rm"]
         , ["--env", "LOG_LEVEL=debug"]
         , ["--env", "LOG_COLOR=always"]
+        , ["--env", "HOST_DIRECTORY=" <> code]
         , ["--env", "MANIFEST=" <> testManifest]
         , ["--env", "RESTYLER_NO_CAP_DROP_ALL=x"]
+        , ["--volume", code <> ":/code"]
         , ["--volume", "/tmp:/tmp"]
         , ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
         , ["--entrypoint", "restyle-path"]
-        , ["--workdir", cwd]
         , ["restyled/restyler:edge", "."]
         ]
     )
@@ -108,4 +115,4 @@ writeYaml path =
     . Yaml.encode
 
 testManifest :: FilePath
-testManifest = "/tmp/restylers-testing.yaml"
+testManifest = "./manifest.yaml"
