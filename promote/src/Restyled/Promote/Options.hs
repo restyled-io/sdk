@@ -73,7 +73,7 @@ integrationOptions =
       str
       ( long "image"
           <> help "Restyler image to test with"
-          <> value "restyled/restyler:master-final"
+          <> value "restyled/restyler:edge"
           <> metavar "IMAGE"
       )
     <*> switch
