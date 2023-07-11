@@ -20,7 +20,7 @@ import Restylers.Info.Test
 import qualified Restylers.Info.Test as Test
 import qualified Restylers.Manifest as Manifest
 import Restylers.Name (RestylerName (..))
-import System.Environment (withArgs)
+import System.Environment (lookupEnv, withArgs)
 import Test.Hspec
 
 testRestylers
@@ -35,6 +35,7 @@ testRestylers
 testRestylers restylers hspecArgs = do
   cwd <- getCurrentDirectory
   chd <- getCurrentHostDirectory
+  rts <- liftIO $ maybe False (not . null) <$> lookupEnv "RESTYLERS_TEST_SHOW"
 
   withTempDirectory cwd "restylers-test" $ \tmp ->
     withCurrentDirectory tmp $ do
@@ -76,7 +77,10 @@ testRestylers restylers hspecArgs = do
                         (Manifest.name restyler)
                         (Manifest.include restyler)
                         test
-                  restyled `shouldBe` Test.restyled test
+
+                  if rts
+                    then show restyled `shouldBe` show (Test.restyled test)
+                    else restyled `shouldBe` Test.restyled test
 
 restylerTests :: Manifest.Restyler -> [(Int, Test.Test)]
 restylerTests = zip [1 ..] . Metadata.tests . Manifest.metadata
