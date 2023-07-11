@@ -63,7 +63,7 @@ tagRestylerImage info = do
         let versioned = mkRestylerImage registry name version
         versioned <$ dockerTag image versioned
 
-  case Info.imageSource info of
+  image <- case Info.imageSource info of
     Explicit image -> pure image
     BuildVersionCmd name cmd _ -> do
       logInfo $ "Running " <> display name <> " for version_cmd"
@@ -77,6 +77,8 @@ tagRestylerImage info = do
             <> displayShow (eceExitCode ex)
             <> "), assuming local-only image"
         pure $ unRestylerVersion explicitVersion
+
+  image <$ logInfo ("Tagged " <> display image)
 
 doesRestylerImageExist
   :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
