@@ -53,7 +53,7 @@ testCaseFiles name n TestCase {support, extension, contents}
              ( unpack name
                 </> "test-file-"
                   <> show @Int n
-                    <.> fromMaybe "example" extension
+                  <.> fromMaybe "example" extension
              , contents
              )
            ]
@@ -97,17 +97,17 @@ setupManifestTestFiles channel =
 
 toFiles :: Channel -> [Restyler] -> Map FilePath Text
 toFiles channel restylers =
-  Map.fromList $
-    (".restyled.yaml", restylersYaml)
-      : concatMap toTestFiles restylers
+  Map.fromList
+    $ (".restyled.yaml", restylersYaml)
+    : concatMap toTestFiles restylers
  where
   restylersYaml =
-    decodeUtf8With lenientDecode $
-      Yaml.encode $
-        Restylers
-          { restylers_version = channelName channel
-          , restylers = map toConfigRestyler restylers
-          }
+    decodeUtf8With lenientDecode
+      $ Yaml.encode
+      $ Restylers
+        { restylers_version = channelName channel
+        , restylers = map toConfigRestyler restylers
+        }
 
 toTestFiles :: Restyler -> [(FilePath, Text)]
 toTestFiles Restyler {name, metadata} = fromMaybe [] $ do

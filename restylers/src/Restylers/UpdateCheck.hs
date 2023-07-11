@@ -38,14 +38,14 @@ checkForUpdate info image = do
     liftA2 (,) <$> getCurrentVersion info image <*> getRemoteVersion info
 
   for_ mVersions $ \(current, remote) -> do
-    when (remote > current) $
-      throwString $
-        "Newer version available for "
-          <> unpack (unRestylerName $ Info.name info)
-          <> ":"
-          <> showVersion current
-          <> " < "
-          <> showVersion remote
+    when (remote > current)
+      $ throwString
+      $ "Newer version available for "
+      <> unpack (unRestylerName $ Info.name info)
+      <> ":"
+      <> showVersion current
+      <> " < "
+      <> showVersion remote
 
 getCurrentVersion
   :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
@@ -63,12 +63,12 @@ getRemoteVersion info = do
   mResult <- for (Metadata.upstream $ Info.metadata info) $ \case
     Hackage -> do
       val <-
-        httpJSON @_ @Value $
-          parseRequest_ $
-            unpack $
-              "https://hackage.haskell.org/package/"
-                <> unRestylerName (Info.name info)
-                <> "/preferred"
+        httpJSON @_ @Value
+          $ parseRequest_
+          $ unpack
+          $ "https://hackage.haskell.org/package/"
+          <> unRestylerName (Info.name info)
+          <> "/preferred"
 
       pure $ do
         rv <-
@@ -81,13 +81,13 @@ getRemoteVersion info = do
         toDataVersion rv
     Git orgRepo -> do
       val <-
-        httpJSON @_ @Value $
-          addRequestHeader hUserAgent "Restyled/SDK" $
-            parseRequest_ $
-              unpack $
-                "https://api.github.com/repos/"
-                  <> orgRepo
-                  <> "/git/refs/tags"
+        httpJSON @_ @Value
+          $ addRequestHeader hUserAgent "Restyled/SDK"
+          $ parseRequest_
+          $ unpack
+          $ "https://api.github.com/repos/"
+          <> orgRepo
+          <> "/git/refs/tags"
 
       let rvs =
             getResponseBody val
@@ -97,11 +97,11 @@ getRemoteVersion info = do
                 . _String
                 . to (RestylerVersion . T.dropPrefix "refs/tags/")
 
-      pure $
-        headMaybe $
-          sortOn Down $
-            filter (not . isPrerelease) $
-              mapMaybe toDataVersion rvs
+      pure
+        $ headMaybe
+        $ sortOn Down
+        $ filter (not . isPrerelease)
+        $ mapMaybe toDataVersion rvs
 
   pure $ join mResult
 

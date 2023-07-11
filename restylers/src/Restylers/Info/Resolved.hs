@@ -55,9 +55,9 @@ getImageSource yaml info =
        , getLast <$> Info.image info
        ) of
     (name, Nothing, Nothing, Nothing) ->
-      throwString $
-        unpack (unRestylerName name)
-          <> ": one of image, version_cmd, or version must be specified"
+      throwString
+        $ unpack (unRestylerName name)
+        <> ": one of image, version_cmd, or version must be specified"
     (_, Nothing, Nothing, Just image) -> pure $ Explicit image
     (name, Nothing, Just cmd, _) ->
       pure $ BuildVersionCmd name cmd build
@@ -95,11 +95,11 @@ fromInfo info imageSource =
     , interpreters = fromMaybeLast [] $ Info.interpreters info
     , supports_arg_sep = fromMaybeLast True $ Info.supports_arg_sep info
     , supports_multiple_paths =
-        fromMaybeLast True $
-          Info.supports_multiple_paths info
+        fromMaybeLast True
+          $ Info.supports_multiple_paths info
     , run_as_filter =
-        fromMaybeLast False $
-          Info.run_as_filter info
+        fromMaybeLast False
+          $ Info.run_as_filter info
     , documentation = fromMaybeLast [] $ Info.documentation info
     , metadata = fromMaybeLast Metadata.emptyMetadata $ Info.metadata info
     , imageSource
@@ -108,7 +108,19 @@ fromInfo info imageSource =
   name = getLast $ Info.name info
 
 overrideToInfo :: Override.RestylerOverride -> Info.RestylerInfo
-overrideToInfo Override.RestylerOverride {enabled, name, command, arguments, include, interpreters, supports_arg_sep, supports_multiple_paths, run_as_filter, documentation, metadata} =
+overrideToInfo Override.RestylerOverride
+                { enabled
+                , name
+                , command
+                , arguments
+                , include
+                , interpreters
+                , supports_arg_sep
+                , supports_multiple_paths
+                , run_as_filter
+                , documentation
+                , metadata
+                } =
   Info.RestylerInfo
     { enabled
     , name

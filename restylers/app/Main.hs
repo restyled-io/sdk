@@ -52,8 +52,8 @@ locateYaml input
  where
   err :: (MonadIO m, MonadReader env m, HasLogFunc env) => m ()
   err = do
-    logError $
-      "Invalid PATH input ("
-        <> fromString input
-        <> "). Must be .yml, .yaml, or a directory containing an info.yaml"
+    logError
+      $ "Invalid PATH input ("
+      <> fromString input
+      <> "). Must be .yml, .yaml, or a directory containing an info.yaml"
     exitFailure

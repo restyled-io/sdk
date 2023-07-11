@@ -34,7 +34,19 @@ data Restyler = Restyler
   deriving anyclass (ToJSON)
 
 toRestyler :: Info.RestylerInfo -> RestylerImage -> Restyler
-toRestyler Info.RestylerInfo {enabled, name, command, arguments, include, interpreters, supports_arg_sep, supports_multiple_paths, run_as_filter, documentation, metadata} image =
+toRestyler Info.RestylerInfo
+            { enabled
+            , name
+            , command
+            , arguments
+            , include
+            , interpreters
+            , supports_arg_sep
+            , supports_multiple_paths
+            , run_as_filter
+            , documentation
+            , metadata
+            } image =
   Restyler
     { enabled
     , name

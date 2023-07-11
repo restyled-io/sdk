@@ -39,8 +39,8 @@ spec = do
   describe "load" $ do
     it "can load an override with versioned image" $ inTempDirectory $ do
       let base = "prettier" </> "info" <.> "yaml"
-      addFile base $
-        T.unlines
+      addFile base
+        $ T.unlines
           [ "enabled: true"
           , "name: prettier"
           , "version: v2.0.2-2"
@@ -54,8 +54,8 @@ spec = do
           , "  - https://prettier.io/docs/en/"
           ]
       let override = "prettier-json" </> "info" <.> "yaml"
-      addFile override $
-        T.unlines
+      addFile override
+        $ T.unlines
           [ "overrides: prettier"
           , "name: prettier-json"
           , "include:"

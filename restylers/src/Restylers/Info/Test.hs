@@ -49,7 +49,7 @@ guessExtension =
 
 testDescription :: Int -> Test -> String
 testDescription number Test {name} =
-  unpack $
-    fromMaybe
+  unpack
+    $ fromMaybe
       ("Test #" <> pack (show number))
       name

@@ -16,8 +16,8 @@ main = do
   runSimpleApp $ do
     traverse_ (`uploadManifest` oFromChannel) oFromPath
 
-    unless oSkipIntegrationTest $
-      runIntegrationTest oFromChannel oIntegrationTestOptions
+    unless oSkipIntegrationTest
+      $ runIntegrationTest oFromChannel oIntegrationTestOptions
 
     for_ oToChannel $ \channel -> do
       diffManifests oFromChannel channel

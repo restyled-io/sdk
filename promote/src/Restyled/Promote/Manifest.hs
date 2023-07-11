@@ -34,8 +34,8 @@ diffManifests
   -> m ()
 diffManifests fromChannel toChannel = withManifest fromChannel $ \updated ->
   withManifest toChannel $ \current ->
-    void $
-      proc
+    void
+      $ proc
         "diff"
         ["--unified", "--color=always", current, updated]
         runProcess

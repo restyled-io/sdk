@@ -72,10 +72,10 @@ tagRestylerImage info = do
       logInfo $ "Tagging " <> display name <> " as explicit version"
       mkVersioned name $ \image -> do
         pullRestylerImage image `catch` \ex ->
-          logWarn $
-            "Error pulling ("
-              <> displayShow (eceExitCode ex)
-              <> "), assuming local-only image"
+          logWarn
+            $ "Error pulling ("
+            <> displayShow (eceExitCode ex)
+            <> "), assuming local-only image"
         pure $ unRestylerVersion explicitVersion
 
 doesRestylerImageExist

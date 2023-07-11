@@ -75,16 +75,16 @@ runIntegrationTest channel IntegrationTestOptions {..} = do
 
   withManifest channel $ \manifest -> do
     withTemporaryClone cloneUrl $ do
-      void $
-        orM
+      void
+        $ orM
           [ git "checkout" ["--quiet", oitBranch]
           , True <$ git_ "checkout" ["--quiet", "-b", oitBranch]
           ]
 
       setupManifestTestFiles channel manifest
 
-      void $
-        andM
+      void
+        $ andM
           [ git "add" ["."]
           , git "commit" ["-m", "Update test case files"]
           , True <$ git_ "push" []
@@ -149,9 +149,9 @@ git_
   -> m ()
 git_ cmd args = do
   success <- git cmd args
-  unless success $
-    throwString $
-      "git command was not successful: "
-        <> show cmd
-        <> " "
-        <> show args
+  unless success
+    $ throwString
+    $ "git command was not successful: "
+    <> show cmd
+    <> " "
+    <> show args
