@@ -45,7 +45,7 @@ build quiet RestylerBuild {..} image = image <$ proc "docker" args runProcess_
  where
   args =
     concat
-      [ ["build"]
+      [ ["buildx", "build"]
       , ["--quiet" | quiet]
       , ["--tag", unImage image]
       , ["--file", dockerfile]
