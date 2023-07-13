@@ -32,6 +32,7 @@ default-extensions:
   - TypeFamilies
 
 ghc-options: -Weverything
+  -Wno-missed-specialisations
   -Wno-missing-import-lists
   -Wno-missing-kind-signatures
   -Wno-missing-safe-haskell-mode

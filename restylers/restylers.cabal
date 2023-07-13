@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b9019817a54b1fb6490019ac3f26a948cef37aa7d210d3ac7388048c89d0703d
+-- hash: 0397e6ac9cd99b64f7b6d3891cbd805408ce081036a81d7d453974b0e4b175cc
 
 name:           restylers
 version:        0.0.0.0
@@ -61,7 +61,7 @@ library
       StandaloneDeriving
       TypeApplications
       TypeFamilies
-  ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
+  ghc-options: -Weverything -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
   build-depends:
       aeson
     , base
@@ -109,7 +109,7 @@ executable restylers
       StandaloneDeriving
       TypeApplications
       TypeFamilies
-  ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
+  ghc-options: -Weverything -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
   build-depends:
       base
     , restylers
@@ -148,7 +148,7 @@ test-suite doctest
       StandaloneDeriving
       TypeApplications
       TypeFamilies
-  ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
+  ghc-options: -Weverything -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
   build-depends:
       base
     , doctest
@@ -188,7 +188,7 @@ test-suite spec
       StandaloneDeriving
       TypeApplications
       TypeFamilies
-  ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
+  ghc-options: -Weverything -Wno-missed-specialisations -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
   build-depends:
       aeson
     , base
