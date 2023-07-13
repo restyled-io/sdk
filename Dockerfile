@@ -42,7 +42,11 @@ RUN \
   rm -rf /var/lib/apt/lists/*
 RUN gem install jwt
 
+# Docker
 COPY --from=builder /usr/bin/docker /bin/docker
+COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+RUN docker buildx version
+
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
 COPY files/ /
