@@ -8,6 +8,7 @@ import RIO.Directory (doesFileExist)
 import RIO.FilePath (takeExtension, (<.>), (</>))
 import Restylers.App
 import Restylers.Build
+import Restylers.Image (getSeriesImages)
 import qualified Restylers.Info.Resolved as Info
 import Restylers.Manifest (toRestyler)
 import qualified Restylers.Manifest as Manifest
@@ -37,7 +38,14 @@ main = do
         exists <- doesRestylerImageExist $ Manifest.image restyler
         if exists
           then logWarn "Not pushing, image exists"
-          else pushRestylerImage $ Manifest.image restyler
+          else do
+            pushRestylerImage $ Manifest.image restyler
+
+            for_ (getSeriesImages $ Manifest.image restyler) $ \images -> do
+              for_ images $ \image -> do
+                logInfo $ "Updating series image " <> display image
+                dockerTag (Manifest.image restyler) image
+                pushRestylerImage image
 
       traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
 

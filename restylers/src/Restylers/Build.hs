@@ -4,6 +4,7 @@ module Restylers.Build
   , doesRestylerImageExist
   , pushRestylerImage
   , dockerRunSh
+  , dockerTag
   ) where
 
 import RIO hiding (to)
