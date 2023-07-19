@@ -4,7 +4,6 @@ module Restylers.Build
   , doesRestylerImageExist
   , pushRestylerImage
   , dockerRunSh
-  , dockerTag
   ) where
 
 import RIO hiding (to)
@@ -79,7 +78,14 @@ tagRestylerImage info = do
             <> "), assuming local-only image"
         pure $ unRestylerVersion explicitVersion
 
-  image <$ logInfo ("Tagged " <> display image)
+  logInfo $ "Tagged " <> display image
+
+  for_ (getSeriesImages image) $ \seriesImages -> do
+    for_ seriesImages $ \seriesImage -> do
+      dockerTag image seriesImage
+      logInfo $ "Tagged " <> display seriesImage
+
+  pure image
 
 doesRestylerImageExist
   :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)

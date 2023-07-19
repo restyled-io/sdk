@@ -41,11 +41,9 @@ main = do
           else do
             pushRestylerImage $ Manifest.image restyler
 
-            for_ (getSeriesImages $ Manifest.image restyler) $ \images -> do
-              for_ images $ \image -> do
-                logInfo $ "Updating series image " <> display image
-                dockerTag (Manifest.image restyler) image
-                pushRestylerImage image
+            traverse_ (traverse_ pushRestylerImage)
+              $ getSeriesImages
+              $ Manifest.image restyler
 
       traverse_ (liftIO . (`Manifest.write` restylers)) oWrite
 
