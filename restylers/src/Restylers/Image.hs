@@ -2,17 +2,20 @@ module Restylers.Image
   ( RestylerImage
   , unRestylerImage
   , mkRestylerImage
+  , getSeriesImages
   )
 where
 
 import RIO
 
 import Data.Aeson
+import qualified RIO.NonEmpty as NE
 import RIO.Text (unpack)
 import qualified RIO.Text as T
 import qualified RIO.Text.Partial as T (breakOnEnd)
 import Restylers.Name
 import Restylers.Registry
+import Restylers.Version
 
 data RestylerImage = RestylerImage
   { riRegistry :: Maybe Registry
@@ -101,6 +104,21 @@ unRestylerImage RestylerImage {..} =
     <> unRestylerImageName riName
     <> ":"
     <> unRestylerImageTag riTag
+
+setRestylerImageTag :: RestylerImage -> RestylerImageTag -> RestylerImage
+setRestylerImageTag i t = i {riTag = t}
+
+getSeriesImages :: RestylerImage -> Maybe (NonEmpty RestylerImage)
+getSeriesImages image = do
+  tags <-
+    NE.nonEmpty
+      $ catMaybes
+        [ toSeriesMajor version
+        , toSeriesMinor version
+        ]
+  pure $ setRestylerImageTag image . RestylerImageTag <$> tags
+ where
+  version = RestylerVersion $ unRestylerImageTag $ riTag image
 
 guarded :: Alternative f => (t -> Bool) -> t -> f t
 guarded p x = x <$ guard (p x)

@@ -7,6 +7,7 @@ import RIO
 
 import Data.Aeson
 import qualified RIO.ByteString.Lazy as BSL
+import RIO.Text (unpack)
 import Restylers.Image
 import Restylers.Name
 import Restylers.Registry
@@ -49,6 +50,38 @@ spec = do
 
     it "rejects images without org/name" $ do
       decodeTextValue @RestylerImage "bar:baz" `shouldSatisfy` isLeft
+
+  describe "getSeriesImages" $ do
+    let
+      testCases :: [(Text, Maybe (NonEmpty Text))]
+      testCases =
+        [ ("v2.0.2", Just ("v2" :| ["v2.0"]))
+        , ("15.0.7", Nothing)
+        , ("v0.6.1-alpha-3", Just ("v0" :| ["v0.6"]))
+        , ("v0.13.0.0", Nothing)
+        , ("v2", Nothing)
+        , ("go1.20.5", Nothing)
+        , ("v5.3", Nothing)
+        , ("v0.0-1318-gf6b4485", Nothing)
+        ]
+
+    for_ testCases $ \(tag, mSeriesTags) -> do
+      let
+        toImage :: Text -> RestylerImage
+        toImage = mkRestylerImage Nothing (RestylerName "foo")
+
+        expected :: Maybe (NonEmpty Text)
+        expected = fmap (unRestylerImage . toImage) <$> mSeriesTags
+
+        actual :: Maybe (NonEmpty Text)
+        actual = fmap unRestylerImage <$> getSeriesImages (toImage tag)
+
+        doc =
+          if isNothing mSeriesTags
+            then "does not expand " <> unpack tag
+            else "expands " <> unpack tag <> " into series images"
+
+      it doc $ actual `shouldBe` expected
 
 decodeTextValue :: FromJSON a => Text -> Either String a
 decodeTextValue x =
