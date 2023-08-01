@@ -11,6 +11,7 @@ import Data.Aeson
 import qualified Data.Yaml as Yaml
 import RIO.Directory (createDirectoryIfMissing)
 import RIO.FilePath (takeDirectory, (<.>), (</>))
+import RIO.List (headMaybe)
 import qualified RIO.Map as Map
 import RIO.Text (unpack)
 import qualified RIO.Text as T
@@ -18,6 +19,7 @@ import Restyled.Promote.Channel
 
 data Restyler = Restyler
   { name :: Text
+  , include :: [Text]
   , metadata :: Maybe Metadata
   }
   deriving stock (Generic)
@@ -31,7 +33,7 @@ newtype Metadata = Metadata
 
 data TestCase = TestCase
   { support :: Maybe SupportFile
-  , extension :: Maybe String
+  , extension :: Maybe Text
   , contents :: Text
   }
   deriving stock (Generic)
@@ -40,23 +42,25 @@ data TestCase = TestCase
 testCaseFiles
   :: Text
   -- ^ Restyler name
+  -> Maybe Text
+  -- ^ Inferred extension
   -> Int
   -- ^ Index
   -> TestCase
   -> [(FilePath, Text)]
-testCaseFiles name n TestCase {support, extension, contents}
+testCaseFiles name inferredExtension n TestCase {support, extension, contents}
   | "\r\n" `T.isInfixOf` contents =
       []
   | otherwise =
       maybeToList (supportFile <$> support)
         <> [
-             ( unpack name
-                </> "test-file-"
-                  <> show @Int n
-                  <.> fromMaybe "example" extension
+             ( unpack name </> baseName
              , contents
              )
            ]
+ where
+  baseName = "test-file-" <> show @Int n <.> unpack finalExtension
+  finalExtension = fromMaybe "example" $ extension <|> inferredExtension
 
 data SupportFile = SupportFile
   { path :: FilePath
@@ -110,9 +114,16 @@ toFiles channel restylers =
         }
 
 toTestFiles :: Restyler -> [(FilePath, Text)]
-toTestFiles Restyler {name, metadata} = fromMaybe [] $ do
+toTestFiles Restyler {name, include, metadata} = fromMaybe [] $ do
   Metadata {tests} <- metadata
-  concat . zipWith (testCaseFiles name) [0 ..] <$> tests
+
+  let mExtension =
+        headMaybe
+          . filter ("." `T.isInfixOf`)
+          . filter (not . ("!" `T.isPrefixOf`))
+          $ include
+
+  concat . zipWith (testCaseFiles name mExtension) [0 ..] <$> tests
 
 writeFiles
   :: (MonadIO m, MonadReader env m, HasLogFunc env)
