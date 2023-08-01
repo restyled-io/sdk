@@ -17,5 +17,13 @@ data Support = Support
   deriving stock (Eq, Show, Generic)
   deriving anyclass (FromJSON, ToJSON)
 
-writeSupportFile :: MonadIO m => Support -> m ()
-writeSupportFile Support {path, contents} = writeFileUtf8 path contents
+writeSupportFile
+  :: ( MonadIO m
+     , MonadReader env m
+     , HasLogFunc env
+     )
+  => Support
+  -> m ()
+writeSupportFile Support {path, contents} = do
+  logInfo $ "CREATE " <> fromString path
+  writeFileUtf8 path contents

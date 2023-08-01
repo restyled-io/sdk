@@ -28,10 +28,22 @@ data Test = Test
   deriving stock (Eq, Show, Generic)
   deriving anyclass (FromJSON, ToJSON)
 
-writeTestFiles :: MonadIO m => Int -> RestylerName -> [Text] -> Test -> m ()
+writeTestFiles
+  :: ( MonadIO m
+     , MonadReader env m
+     , HasLogFunc env
+     )
+  => Int
+  -> RestylerName
+  -> [Text]
+  -> Test
+  -> m ()
 writeTestFiles number name include test@Test {contents, support} = do
-  writeFileUtf8 (testFilePath number name include test) contents
+  logInfo $ "CREATE " <> fromString path
+  writeFileUtf8 path contents
   traverse_ writeSupportFile support
+ where
+  path = testFilePath number name include test
 
 testFilePath :: Int -> RestylerName -> [Text] -> Test -> FilePath
 testFilePath number name include Test {extension} =
