@@ -31,7 +31,7 @@ data Restyler = Restyler
   , metadata :: Metadata
   }
   deriving stock (Eq, Show, Generic)
-  deriving anyclass (ToJSON)
+  deriving anyclass (FromJSON, ToJSON)
 
 toRestyler :: Info.RestylerInfo -> RestylerImage -> Restyler
 toRestyler Info.RestylerInfo
