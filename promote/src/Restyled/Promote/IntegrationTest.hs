@@ -83,12 +83,18 @@ runIntegrationTest channel IntegrationTestOptions {..} = do
 
       setupManifestTestFiles channel manifest
 
-      void
-        $ andM
+      result <-
+        andM
           [ git "add" ["."]
           , git "commit" ["-m", "Update test case files"]
           , True <$ git_ "push" []
           ]
+
+      if result
+        then do
+          logInfo "Test case files updated, delaying to see pushed updates"
+          threadDelay $ 3 * 1000000
+        else logWarn "Test case files not updated"
 
   proc
     "docker"
