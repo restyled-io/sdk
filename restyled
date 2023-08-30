@@ -4,6 +4,7 @@ set -eu
 options=(
   --rm
   --env "REALPWD=$PWD"
+  --env RESTYLERS_TEST_SHOW
   --volume "$PWD":/code
   --volume /tmp:/tmp
   --volume /var/run/docker.sock:/var/run/docker.sock
