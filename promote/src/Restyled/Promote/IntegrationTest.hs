@@ -103,6 +103,7 @@ runIntegrationTest channel IntegrationTestOptions {..} = do
         , ["--env", "LOG_COLOR=always"]
         , if oitDebug then ["--env", "LOG_LEVEL=debug"] else []
         , ["--env", "GITHUB_ACCESS_TOKEN=" <> unpack token]
+        , ["--env", "IMAGE_CLEANUP=x"]
         , ["--volume", "/tmp:/tmp"]
         , ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
         , [unpack oitRestylerImage]
