@@ -19,6 +19,7 @@ data Options = Options
   , oPush :: Bool
   , oWrite :: Maybe FilePath
   , oCheckForUpdate :: Bool
+  -- ^ Ignored now. Will be parsed until we update restylers CI to not call it
   , oInput :: NonEmpty FilePath
   , oHspecArgs :: Maybe [String]
   }
@@ -76,10 +77,7 @@ options =
               <> metavar "PATH"
           )
       )
-    <*> switch
-      ( long "check-for-update"
-          <> help "Check for updates if possible, fail if available"
-      )
+    <*> switch (long "check-for-update" <> internal)
     <*> some1
       ( argument
           str

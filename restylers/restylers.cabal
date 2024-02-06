@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c7fa5ccb57e11885043adcd8ab6740e260694806ac84e77a8154d6e8f4b9c3f1
+-- hash: 5d733b17353e954912d8210b02c7c9e2cede70f2ce17ca5c19888a2f89c686fc
 
 name:           restylers
 version:        0.0.0.0
@@ -30,7 +30,6 @@ library
       Restylers.Override
       Restylers.Registry
       Restylers.Test
-      Restylers.UpdateCheck
       Restylers.Version
   other-modules:
       Paths_restylers
@@ -68,10 +67,6 @@ library
     , errors
     , filepath
     , hspec
-    , http-conduit
-    , http-types
-    , lens
-    , lens-aeson
     , optparse-applicative
     , rio
     , semigroups
