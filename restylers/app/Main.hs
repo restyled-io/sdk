@@ -14,7 +14,6 @@ import Restylers.Manifest (toRestyler)
 import qualified Restylers.Manifest as Manifest
 import Restylers.Options
 import Restylers.Test
-import Restylers.UpdateCheck
 
 main :: IO ()
 main = do
@@ -29,7 +28,6 @@ main = do
         info <- Info.load yaml
         when oBuild $ buildRestylerImage info
         image <- tagRestylerImage info
-        when oCheckForUpdate $ checkForUpdate info image
         pure $ toRestyler info image
 
       testRestylers restylers $ fromMaybe [] oHspecArgs
