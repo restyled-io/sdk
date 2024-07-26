@@ -8,7 +8,7 @@ inputs:
 outputs: {}
 runs:
   using: docker
-  image: docker://restyled/sdk:main
+  image: docker://restyled/sdk:next
   entrypoint: sh
   args:
     - -c
