@@ -56,6 +56,9 @@ ENV GIT_AUTHOR_EMAIL=commits@restyled.io
 ENV GIT_COMMITTER_NAME=Restyled.io
 ENV GIT_COMMITTER_EMAIL=commits@restyled.io
 
+# Restyle
+RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/restyled-io/restyler/main/install | sh
+
 RUN mkdir -p /code
 WORKDIR /code
 ENTRYPOINT ["restyled"]
