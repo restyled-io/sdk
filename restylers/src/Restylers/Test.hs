@@ -95,19 +95,13 @@ runRestyler
   -> m (BSL.ByteString, BSL.ByteString)
 runRestyler code = do
   proc
-    "docker"
+    "restyle"
     ( concat
-        [ ["run", "--rm"]
-        , ["--env", "LOG_LEVEL=debug"]
-        , ["--env", "LOG_COLOR=always"]
-        , ["--env", "HOST_DIRECTORY=" <> code]
-        , ["--env", "MANIFEST=" <> testManifest]
-        , ["--env", "RESTYLER_NO_CAP_DROP_ALL=x"]
-        , ["--volume", code <> ":/code"]
-        , ["--volume", "/tmp:/tmp"]
-        , ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
-        , ["--entrypoint", "restyle-path"]
-        , ["restyled/restyler:edge", "."]
+        [ ["--debug"]
+        , ["--color", "always"]
+        , ["--host-directory", code]
+        , ["--manifest", testManifest]
+        , ["."]
         ]
     )
     readProcess_
