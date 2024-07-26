@@ -55,10 +55,22 @@ restyled promote dev
 restyled promote dev staging
 ```
 
+### Run the above, removing pulled images after use
+
+```console
+restyled promote dev staging --restyle-cmd "restyle --image-cleanup"
+```
+
+### Run the above, with a locally-developed `restyle` and debug logging
+
+```console
+restyled promote dev staging --restyle-cmd \
+  "stack --stack-yaml '$PWD/../restyler/stack.yaml' exec -- restyle --debug"
+```
+
 ## As GitHub Action
 
-Test an already-built Restyler image (`matrix.restyler`), and create a manifest
-of only it `restylers.yaml`:
+### Test an already-built Restyler image and create a manifest
 
 ```yaml
 - name: Test
@@ -72,7 +84,7 @@ of only it `restylers.yaml`:
       ${{ matrix.restyler }}
 ```
 
-Publish a manifest named `github.sha`:
+### Publish a manifest without testing it
 
 ```yaml
 - name: Promote
