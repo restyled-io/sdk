@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e685a19d2dddf6c5e25c098b7ad36a0b671b741688b865f9f9ca507a09920889
+-- hash: 0f1e8343c6a1084503c4843274e5cd1cff1b788bebf982c7e121eb984778b6fc
 
 name:           promote
 version:        0.0.0.0
@@ -55,6 +55,7 @@ library
     , errors
     , http-conduit
     , optparse-applicative
+    , random-shuffle
     , restylers
     , rio
     , shellwords

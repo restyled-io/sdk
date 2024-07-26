@@ -1,5 +1,6 @@
 module Restyled.Promote.IntegrationTest
-  ( RestyleCmd
+  ( TestCount (..)
+  , RestyleCmd
   , optRestyleCmd
   , runIntegrationTest
   )
@@ -52,15 +53,25 @@ runIntegrationTest
      , HasProcessContext env
      )
   => Channel
+  -> TestCount
   -> RestyleCmd
   -> m ()
-runIntegrationTest channel (RestyleCmd restyleCmd) = do
-  logInfo $ "Channel: " <> display channel
+runIntegrationTest channel tc (RestyleCmd restyleCmd) = do
+  logInfo
+    $ mconcat
+      [ "Testing "
+      , case tc of
+          TestAll -> "all Restylers"
+          TestOnly n -> display @Int (fromIntegral n) <> " random Restyler(s)"
+      , " from the "
+      , display channel
+      , " manifest"
+      ]
 
   withManifest channel $ \manifest -> do
     withSystemTempDirectory "" $ \tmp -> do
       withCurrentDirectory tmp $ do
-        setupManifestTestFiles channel manifest
+        setupManifestTestFiles channel manifest tc
         logDebug . display =<< readFileUtf8 ".restyled.yaml"
 
         logInfo "Committing config and test files"

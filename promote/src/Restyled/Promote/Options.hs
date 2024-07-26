@@ -12,7 +12,7 @@ import Restyled.Promote.IntegrationTest
 
 data Options = Options
   { oFromPath :: Maybe FilePath
-  , oSkipIntegrationTest :: Bool
+  , oTestCount :: TestCount
   , oRestyleCmd :: RestyleCmd
   , oProceed :: Bool
   , oFromChannel :: Channel
@@ -33,10 +33,7 @@ options =
               <> metavar "PATH"
           )
       )
-    <*> switch
-      ( long "no-test"
-          <> help "Skip integration tests step"
-      )
+    <*> optTestCount
     <*> optRestyleCmd
     <*> switch
       ( long "yes"
@@ -54,6 +51,24 @@ options =
               <> metavar "TO"
           )
       )
+
+optTestCount :: Parser TestCount
+optTestCount =
+  go
+    <$> switch
+      ( long "no-test"
+          <> help "Skip integration tests step"
+      )
+    <*> optional
+      ( option
+          auto
+          (long "test-count" <> metavar "N" <> help "Run test for N random restylers")
+      )
+ where
+  go b mtc = case (b, mtc) of
+    (True, _) -> TestOnly 0
+    (_, Nothing) -> TestAll
+    (_, Just tc) -> TestOnly tc
 
 parse :: Parser a -> String -> ParserInfo a
 parse p d = info (p <**> helper) $ fullDesc <> progDesc d

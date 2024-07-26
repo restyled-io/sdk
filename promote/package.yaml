@@ -48,6 +48,7 @@ library:
     - errors
     - http-conduit
     - optparse-applicative
+    - random-shuffle
     - restylers
     - shellwords
     - yaml
