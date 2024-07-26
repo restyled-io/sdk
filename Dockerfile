@@ -1,4 +1,4 @@
-FROM fpco/stack-build-small:lts-20.11 AS builder
+FROM fpco/stack-build-small:lts-22.28 AS builder
 LABEL maintainer="Pat Brisbin <pbrisbin@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN \
@@ -23,13 +23,12 @@ RUN stack install --pedantic --test
 
 RUN curl -sL https://get.docker.com/ | sh
 
-FROM ubuntu:18.04
+FROM ubuntu:24.04
 LABEL maintainer="Pat Brisbin <pbrisbin@gmail.com>"
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN \
   apt-get update && \
   apt-get install -y --no-install-recommends \
-    awscli \
     ca-certificates \
     curl \
     git \
@@ -37,10 +36,19 @@ RUN \
     jq \
     locales \
     netbase \
-    ruby-full && \
+    ruby-full \
+    unzip && \
   locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
 RUN gem install jwt
+
+# AWS CLIv2
+RUN \
+  cd /tmp && \
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+  unzip awscliv2.zip && \
+  ./aws/install && \
+  rm -rf aws awscliv2.zip
 
 # Docker
 COPY --from=builder /usr/bin/docker /bin/docker
