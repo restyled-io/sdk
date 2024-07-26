@@ -17,7 +17,7 @@ main = do
     traverse_ (`uploadManifest` oFromChannel) oFromPath
 
     unless oSkipIntegrationTest
-      $ runIntegrationTest oFromChannel oIntegrationTestOptions
+      $ runIntegrationTest oFromChannel oRestyleCmd
 
     for_ oToChannel $ \channel -> do
       diffManifests oFromChannel channel

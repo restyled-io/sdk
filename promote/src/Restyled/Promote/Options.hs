@@ -13,7 +13,7 @@ import Restyled.Promote.IntegrationTest
 data Options = Options
   { oFromPath :: Maybe FilePath
   , oSkipIntegrationTest :: Bool
-  , oIntegrationTestOptions :: IntegrationTestOptions
+  , oRestyleCmd :: RestyleCmd
   , oProceed :: Bool
   , oFromChannel :: Channel
   , oToChannel :: Maybe Channel
@@ -21,8 +21,6 @@ data Options = Options
 
 parseOptions :: IO Options
 parseOptions = execParser $ parse options "Test and promote a Restylers set"
-
--- brittany-disable-next-binding
 
 options :: Parser Options
 options =
@@ -39,7 +37,7 @@ options =
       ( long "no-test"
           <> help "Skip integration tests step"
       )
-    <*> integrationOptions
+    <*> optRestyleCmd
     <*> switch
       ( long "yes"
           <> help "Confirm overwriting of TO"
@@ -55,31 +53,6 @@ options =
           ( help "Channel to promote to"
               <> metavar "TO"
           )
-      )
-
--- brittany-disable-next-binding
-
-integrationOptions :: Parser IntegrationTestOptions
-integrationOptions =
-  integrationTest
-    <$> option
-      (eitherReader readIntegrationTest)
-      ( long "test"
-          <> help "Test to run"
-          <> value IntegrationTestDemo45
-          <> metavar "TESTNAME"
-      )
-    <*> option
-      str
-      ( long "image"
-          <> help "Restyler image to test with"
-          <> value "restyled/restyler:edge"
-          <> metavar "IMAGE"
-      )
-    <*> switch
-      ( long "debug"
-          <> help "Run Restyler with DEBUG=1"
-          <> showDefault
       )
 
 parse :: Parser a -> String -> ParserInfo a

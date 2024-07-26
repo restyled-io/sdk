@@ -16,8 +16,9 @@ import Restylers.Info.Test
 import Restylers.Manifest
 import Restylers.Name
 
-data Restylers = Restylers
-  { restylers_version :: Text
+data RestyledYaml = RestyledYaml
+  { also_exclude :: [Text]
+  , restylers_version :: Text
   , restylers :: [ConfigRestyler]
   }
   deriving stock (Generic)
@@ -47,7 +48,7 @@ setupManifestTestFiles
   -> m ()
 setupManifestTestFiles channel path = do
   restylers <- Yaml.decodeFileThrow path
-  createRestylersYaml channel restylers
+  createRestyledYaml channel restylers
 
   for_ restylers $ \Restyler {name, include, metadata = Metadata {tests}} ->
     for_ (zip [0 ..] tests) $ \(n, test) ->
@@ -55,17 +56,18 @@ setupManifestTestFiles channel path = do
       unless ("\r\n" `T.isInfixOf` contents test) $ do
         writeTestFiles n name include test
 
-createRestylersYaml
+createRestyledYaml
   :: (MonadIO m, MonadReader env m, HasLogFunc env)
   => Channel
   -> [Restyler]
   -> m ()
-createRestylersYaml channel restylers = do
+createRestyledYaml channel restylers = do
   logInfo "CREATE .restyled.yaml"
   writeFileUtf8 ".restyled.yaml"
     $ decodeUtf8With lenientDecode
     $ Yaml.encode
-    $ Restylers
-      { restylers_version = channelName channel
+    $ RestyledYaml
+      { also_exclude = ["./.git/**/*"]
+      , restylers_version = channelName channel
       , restylers = map toConfigRestyler restylers
       }

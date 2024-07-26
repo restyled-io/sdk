@@ -1,53 +1,49 @@
 module Restyled.Promote.IntegrationTest
-  ( IntegrationTests (..)
-  , integrationTest
-  , readIntegrationTest
-  , IntegrationTestOptions (..)
+  ( RestyleCmd
+  , optRestyleCmd
   , runIntegrationTest
   )
 where
 
 import RIO
 
-import Control.Monad.Extra (andM, orM)
+import Control.Error.Util (note)
+import Options.Applicative
 import qualified RIO.ByteString.Lazy as BSL
 import RIO.Directory (withCurrentDirectory)
+import qualified RIO.NonEmpty as NE
 import RIO.Process
-import RIO.Text (pack, unpack)
 import qualified RIO.Text as T
 import Restyled.Promote.Channel
 import Restyled.Promote.IntegrationTest.Setup
 import Restyled.Promote.Manifest
+import qualified ShellWords
 
-data IntegrationTests
-  = IntegrationTestDemo45
-
-readIntegrationTest :: String -> Either String IntegrationTests
-readIntegrationTest = \case
-  "demo45" -> Right IntegrationTestDemo45
-  x -> Left $ "Invalid test " <> show x
-
-integrationTest :: IntegrationTests -> Text -> Bool -> IntegrationTestOptions
-integrationTest IntegrationTestDemo45 image debug =
-  IntegrationTestOptions
-    { oitApp = "dev"
-    , oitInstallationId = 58920
-    , oitRepo = "restyled-io/demo"
-    , oitBranch = "testing/all"
-    , oitPullRequest = 45
-    , oitRestylerImage = image
-    , oitDebug = debug
-    }
-
-data IntegrationTestOptions = IntegrationTestOptions
-  { oitApp :: Text
-  , oitInstallationId :: Int
-  , oitRepo :: Text
-  , oitBranch :: Text
-  , oitPullRequest :: Int
-  , oitRestylerImage :: Text
-  , oitDebug :: Bool
+newtype RestyleCmd = RestyleCmd
+  { unRestyleCmd :: NonEmpty String
   }
+
+instance Show RestyleCmd where
+  show = unwords . toList . unRestyleCmd
+
+defaultRestyleCmd :: RestyleCmd
+defaultRestyleCmd = RestyleCmd $ pure "restyle"
+
+readRestyleCmd :: String -> Either String RestyleCmd
+readRestyleCmd s = do
+  wds <- ShellWords.parse s
+  cmd <- note "Restyle cmd cannot be empty" $ NE.nonEmpty wds
+  pure $ RestyleCmd cmd
+
+optRestyleCmd :: Parser RestyleCmd
+optRestyleCmd =
+  option
+    (eitherReader readRestyleCmd)
+    ( long "restyle-cmd"
+        <> help ""
+        <> value defaultRestyleCmd
+        <> showDefault
+    )
 
 runIntegrationTest
   :: ( MonadUnliftIO m
@@ -56,109 +52,39 @@ runIntegrationTest
      , HasProcessContext env
      )
   => Channel
-  -> IntegrationTestOptions
+  -> RestyleCmd
   -> m ()
-runIntegrationTest channel IntegrationTestOptions {..} = do
-  let pr = oitRepo <> "#" <> tshow oitPullRequest
-
+runIntegrationTest channel (RestyleCmd restyleCmd) = do
   logInfo $ "Channel: " <> display channel
-  logInfo $ "Restyler Image: " <> display oitRestylerImage
-  logInfo $ "Pull Request: " <> display pr
-
-  token <- getAccessToken oitApp oitInstallationId
-  let cloneUrl =
-        "https://x-access-token:"
-          <> token
-          <> "@github.com/"
-          <> oitRepo
-          <> ".git"
 
   withManifest channel $ \manifest -> do
-    withTemporaryClone cloneUrl $ do
-      void
-        $ orM
-          [ git "checkout" ["--quiet", oitBranch]
-          , True <$ git_ "checkout" ["--quiet", "-b", oitBranch]
-          ]
+    withSystemTempDirectory "" $ \tmp -> do
+      withCurrentDirectory tmp $ do
+        setupManifestTestFiles channel manifest
+        logDebug . display =<< readFileUtf8 ".restyled.yaml"
 
-      setupManifestTestFiles channel manifest
+        logInfo "Committing config and test files"
+        proc "git" ["init", "."] runProcess_
+        proc "git" ["add", "."] runProcess_
+        proc "git" ["commit", "-m", "Add test files"] runProcess_
+        sha <-
+          T.unpack
+            . T.dropWhileEnd (== '\n')
+            . decodeUtf8With lenientDecode
+            . BSL.toStrict
+            <$> proc "git" ["rev-parse", "HEAD"] readProcessStdout_
 
-      result <-
-        andM
-          [ git "add" ["."]
-          , git "commit" ["-m", "Update test case files"]
-          , True <$ git_ "push" []
-          ]
+        logInfo "Running restyle"
+        proc
+          (NE.head restyleCmd)
+          ( concat
+              [ NE.tail restyleCmd
+              , ["--color", "always"]
+              , ["--manifest", manifest]
+              , ["."]
+              ]
+          )
+          runProcess_
 
-      if result
-        then do
-          logInfo "Test case files updated, delaying to see pushed updates"
-          threadDelay $ 3 * 1000000
-        else logWarn "Test case files not updated"
-
-  proc
-    "docker"
-    ( concat
-        [ ["run", "--rm"]
-        , ["--env", "LOG_COLOR=always"]
-        , if oitDebug then ["--env", "LOG_LEVEL=debug"] else []
-        , ["--env", "GITHUB_ACCESS_TOKEN=" <> unpack token]
-        , ["--env", "IMAGE_CLEANUP=x"]
-        , ["--volume", "/tmp:/tmp"]
-        , ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
-        , [unpack oitRestylerImage]
-        , ["--job-url", "https://example.com"]
-        , [unpack pr]
-        ]
-    )
-    runProcess_
-
-getAccessToken
-  :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
-  => Text
-  -> Int
-  -> m Text
-getAccessToken env installationId =
-  T.strip
-    . decodeUtf8With lenientDecode
-    . BSL.toStrict
-    <$> proc
-      "restyled"
-      ["get-access-token", unpack env, show installationId]
-      readProcessStdout_
-
-withTemporaryClone
-  :: ( MonadUnliftIO m
-     , MonadReader env m
-     , HasLogFunc env
-     , HasProcessContext env
-     )
-  => Text
-  -> m a
-  -> m a
-withTemporaryClone url f = withSystemTempDirectory "" $ \tmp -> do
-  git_ "clone" [url, pack tmp]
-  withCurrentDirectory tmp f
-
-git
-  :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
-  => Text
-  -> [Text]
-  -> m Bool
-git cmd args = do
-  ec <- proc "git" (map unpack $ cmd : args) runProcess
-  pure $ ec == ExitSuccess
-
-git_
-  :: (MonadIO m, MonadReader env m, HasLogFunc env, HasProcessContext env)
-  => Text
-  -> [Text]
-  -> m ()
-git_ cmd args = do
-  success <- git cmd args
-  unless success
-    $ throwString
-    $ "git command was not successful: "
-    <> show cmd
-    <> " "
-    <> show args
+        logInfo "Differences patch:"
+        proc "git" ["--no-pager", "format-patch", "--stdout", sha] runProcess_

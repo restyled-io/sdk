@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eefcf35860c9b803cdf7e42d2e22c0f9f580efa0cb7b456e7a9a66b18602d596
+-- hash: e685a19d2dddf6c5e25c098b7ad36a0b671b741688b865f9f9ca507a09920889
 
 name:           promote
 version:        0.0.0.0
@@ -52,11 +52,12 @@ library
       aeson
     , base
     , conduit
-    , extra
+    , errors
     , http-conduit
     , optparse-applicative
     , restylers
     , rio
+    , shellwords
     , yaml
   default-language: Haskell2010
 

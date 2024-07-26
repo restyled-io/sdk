@@ -45,10 +45,11 @@ library:
   dependencies:
     - aeson
     - conduit
-    - extra
+    - errors
     - http-conduit
     - optparse-applicative
     - restylers
+    - shellwords
     - yaml
 
 executables:
