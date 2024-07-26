@@ -57,7 +57,7 @@ RUN docker buildx version
 
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
-COPY files/ /
+COPY files/bin/restyled /bin/restyled
 
 ENV GIT_AUTHOR_NAME=Restyled.io
 ENV GIT_AUTHOR_EMAIL=commits@restyled.io
