@@ -27,7 +27,38 @@ docker pull restyled/sdk:main
 restyled <subcommand> [option...]
 ```
 
+## Examples
+
+### Build and run an individual Restylers' tests
+
+(Within `github.com/restyled-io/restylers`)
+
+```console
+restyled restylers prettier
+```
+
+### Upload a manifest of all restylers as `dev` and test it
+
+```console
+restyled promote --file restylers.yaml dev
+```
+
+### Download a manifest by name (`dev`) and test it
+
+```console
+restyled promote dev
+```
+
+### Download a manifest (`dev`), test it, and upload it as `staging`
+
+```console
+restyled promote dev staging
+```
+
 ## As GitHub Action
+
+Test an already-built Restyler image (`matrix.restyler`), and create a manifest
+of only it `restylers.yaml`:
 
 ```yaml
 - name: Test
@@ -40,6 +71,8 @@ restyled <subcommand> [option...]
       --write restyler.yaml
       ${{ matrix.restyler }}
 ```
+
+Publish a manifest named `github.sha`:
 
 ```yaml
 - name: Promote
