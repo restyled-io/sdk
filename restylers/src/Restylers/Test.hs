@@ -48,8 +48,8 @@ testRestylers restylers hspecArgs = do
             test
 
       writeYaml testManifest restylers
-      writeYaml ".restyled.yaml"
-        $ object
+      writeYaml ".restyled.yaml" $
+        object
           [ "restylers_version" .= ("testing" :: Text)
           , "restylers" .= (Manifest.name <$> restylers)
           ]
@@ -71,8 +71,8 @@ testRestylers restylers hspecArgs = do
                   -- If docker-run failed, re-throw it here so it's handled
                   void $ either throwIO pure delayedException
                   restyled <-
-                    readFileUtf8
-                      $ testFilePath
+                    readFileUtf8 $
+                      testFilePath
                         number
                         (Manifest.name restyler)
                         (Manifest.include restyler)
