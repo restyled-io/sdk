@@ -57,7 +57,10 @@ RUN docker buildx version
 
 COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
-COPY files/ /
+
+# Some kind of bug here? "cannot copy to non-directory" Doing just bin works.
+#COPY files/ /
+COPY files/bin/ /bin/
 
 ENV GIT_AUTHOR_NAME=Restyled.io
 ENV GIT_AUTHOR_EMAIL=commits@restyled.io
