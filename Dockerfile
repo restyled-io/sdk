@@ -68,6 +68,7 @@ ENV GIT_COMMITTER_NAME=Restyled.io
 ENV GIT_COMMITTER_EMAIL=commits@restyled.io
 
 # Restyle
+ENV BUMP_TO_FORCE_RESTYLER_REINSTALL=0
 RUN curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/restyled-io/restyler/main/install | sh
 
 RUN mkdir -p /code
