@@ -14,10 +14,8 @@ RUN \
 RUN mkdir -p /src/bin
 WORKDIR /src
 COPY stack.yaml /src/stack.yaml
-COPY promote/package.yaml /src/promote/package.yaml
 COPY restylers/package.yaml /src/restylers/package.yaml
 RUN stack install --dependencies-only --test --no-run-tests
-COPY promote /src/promote/
 COPY restylers /src/restylers/
 RUN stack install --pedantic --test
 
@@ -55,7 +53,6 @@ COPY --from=builder /usr/bin/docker /bin/docker
 COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 RUN docker buildx version
 
-COPY --from=builder /root/.local/bin/promote /bin/restyled-promote
 COPY --from=builder /root/.local/bin/restylers /bin/restyled-restylers
 
 # Some kind of bug here? "cannot copy to non-directory" Doing just bin works.
