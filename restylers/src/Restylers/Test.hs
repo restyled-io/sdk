@@ -101,6 +101,7 @@ runRestyler code = do
         , ["--color", "always"]
         , ["--host-directory", code]
         , ["--manifest", testManifest]
+        , ["--no-pull"]
         , ["."]
         ]
     )
